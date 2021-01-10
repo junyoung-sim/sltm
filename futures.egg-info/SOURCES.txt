@@ -4,7 +4,6 @@ setup.py
 futures.egg-info/PKG-INFO
 futures.egg-info/SOURCES.txt
 futures.egg-info/dependency_links.txt
-futures.egg-info/requires.txt
 futures.egg-info/top_level.txt
 lib/__init__.py
 lib/algo.py
