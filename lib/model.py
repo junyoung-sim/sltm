@@ -5,7 +5,7 @@ import os, ast, json
 import matplotlib.pyplot as plt
 
 from .algo import normalize
-from .util import *
+from .util import write, read
 from .dnn import DeepNeuralNetwork
 
 np.set_printoptions(suppress=True)

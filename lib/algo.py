@@ -3,7 +3,7 @@ import os, random, datetime, itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .util import *
+from .util import YahooFinance
 
 def normalize(data):
     return np.array([(p - min(data)) / (max(data) - min(data)) for p in data])

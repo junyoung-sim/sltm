@@ -1,0 +1,11 @@
+Metadata-Version: 1.2
+Name: futures
+Version: 1.0
+Summary: Deep learning based financial modeling
+Home-page: https://github.com/junyoung-sim/futures/
+Author: Junyoung Sim
+Author-email: eden920.dev@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3.8

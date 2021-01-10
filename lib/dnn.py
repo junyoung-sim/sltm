@@ -6,7 +6,7 @@ import os, ast, json
 import numpy as np
 import tensorflow.compat.v1 as tf
 
-from libs.util import *
+from .util import write, read
 
 logging.disable(logging.WARNING)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '4'
