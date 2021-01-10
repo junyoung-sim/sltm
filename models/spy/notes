@@ -1,0 +1,7 @@
+0 ~ 20000: 2020-01-01 ~ 2021-01-06 (Backtest = True)
+    Input: 121, Output: 75 [[25,25],[25,100],[100,75]]
+    5080 samples (Training Cost = 0.28, Backtesting Cost = 0.11)
+    Backtest Correctness: 85.83%
+
+20000 ~ 30000: 2020-01-01 ~ 2021-01-06 (Backtest = False)
+    Saved trained samples
