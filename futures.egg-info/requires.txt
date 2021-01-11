@@ -1,0 +1,4 @@
+tqdm
+matplotlib
+tensorflow
+pandas-datareader

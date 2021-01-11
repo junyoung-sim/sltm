@@ -11,4 +11,7 @@ setup(
     python_requires=">=3.8",
     scripts=["futures.py"],
     packages=find_packages(),
+    install_requires = [
+        "tqdm", "matplotlib", "tensorflow", "pandas-datareader"
+    ],
 )

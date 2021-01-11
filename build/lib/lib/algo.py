@@ -77,7 +77,8 @@ def realtime_validation():
             ids = [i[:i.index("_")] for i in os.listdir("./res/" + date + "/") if i.endswith("_pred.npy")]
             for i in range(len(ids)):
                 prediction = list(np.load("./res/" + date + "/" + ids[i] + "_pred.npy"))
-                if len(actual := YahooFinance(ids[i], date, "yyyy-mm-dd").get("prices")) >= 2:
+                actual = YahooFinance(ids[i], date, "yyyy-mm-dd").get("prices")
+                if len(actual) >= 2:
                     fig = plt.figure()
                     plt.plot(prediction[:len(actual)], color="red")
                     plt.plot(normalize(actual), color="green")
