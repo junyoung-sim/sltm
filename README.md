@@ -7,6 +7,10 @@ Make sure $PYTHONPATH is set accordingly to each corresponding  system before ex
 ~~~~~~~~~~~~~~~~~~~~~~~
 python3 setup.py build
 sudo python3 setup.py install
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Run these following commands at any location to use Futures:
+~~~~~~~~~~~~~~~~~~~~~~~
 futures.py run <model_name> <symbol>
 futures.py train <model_name> <symbol> <start_date> <end_date> <learning_rate> <iteartion> <backtest>
 ~~~~~~~~~~~~~~~~~~~~~~~
