@@ -24,9 +24,9 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"): # gener
     input_set, output_set = [], []
     stock = YahooFinance(symbol.lower(), start, end).get("prices")
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
-    for i in range(0, len(stock) - 206):
+    for i in range(0, len(stock)-206):
         loop.set_description("Processing time series...")
-        input_set.append(normalize(mavg(stock[i:i+171], 50)).reshape(11,11)) # D-121 Long Term Trend (Input)  *** PARAMETER TUNING ***
+        input_set.append(normalize(mavg(stock[i:i+171], 50)).reshape(11,11)) # D-121 Long Term Trend  (Input) *** PARAMETER TUNING ***
         output_set.append(normalize(mavg(stock[i+121:i+206], 10)))           # D+75 Short Term Trend (Output) *** PARAMETER TUNING ***
         loop.update(1)
     return {"input": np.array(input_set), "output": np.array(output_set)}
