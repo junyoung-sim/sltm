@@ -52,22 +52,6 @@ def backtest_accuracy(model=""):
             f.write("#{}: {}%\n" .format(d, acc[-1]))
     print(sum([1 for val in acc if val > 50.00]) * 100 / len(acc))
 
-def historical_validation(date="yyyy-mm-dd"):
-    ids = [i[:i.index("_")] for i in os.listdir("./res/" + date + "/") if i.endswith("_pred.npy")]
-    for i in range(len(ids)):
-        test_input = list(np.load("./res/" + date + "/" + ids[i] + "_input.npy"))
-        raw = YahooFinance(ids[i], "2000-01-01", "yyyy-mm-dd")
-        stock, dates = raw.get("prices"), raw.get("dates")
-        print("Running historical trend validation... [{}-{}]" .format(date, ids[i]))
-        with open("./res/" + date + "/" + ids[i] + "_historical_validation", "w+") as f:
-            for i in range(len(stock) - 196):
-                historical_input = normalize(mavg(stock[i:i+171], 50))
-                historical_differential = [1 if val > 0.00 else 0 for val in differential(historical_input)]
-                test_input_differential = [1 if val > 0.00 else 0 for val in differential(test_input)]
-                correctness = sum([1 for i in range(len(historical_differential)) if historical_differential[i] == test_input_differential[i]]) / len(test_input_differential)
-                if correctness > 0.80:
-                    f.write("[{}~{}], [{}~{}] >> {}%\n" .format(dates[i], dates[i+121], dates[i+121], dates[i+196], correctness*100))
-
 def realtime_validation():
     if datetime.datetime.today().weekday() >= 5:
         return

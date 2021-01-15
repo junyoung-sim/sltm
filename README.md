@@ -8,10 +8,10 @@ Make sure $PYTHONPATH is set properly in ~/.zshrc or any equivalent script. For 
 export PYTHONPATH=/Library/Python/3.8/site-packages/$PYTHONPATH
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Run the following commands to install Futures:
+Use the following command to build Futures.
 ~~~~~~~~~~~~~~~~~~~~~~~
-python3 setup.py build
-sudo python3 setup.py install
+chmod +x make # only at initial build
+./make
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Application

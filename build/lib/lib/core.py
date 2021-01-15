@@ -50,7 +50,7 @@ class Futures:
                 np.save(f, actual)
             with open(self.model_path + "backtest/output.npy", "wb") as f:
                 np.save(f, test_result)
-    def test_trained_data(self, symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
+    def save_trained_data(self, symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         dataset = process_timeseries(symbol, start, end)
         self.model.initialize(dataset)
         prediction = self.model.run()
@@ -61,8 +61,7 @@ class Futures:
         self.model.initialize({"input": test_input, "output": []})
         prediction = self.model.run()
 
-        today = str(datetime.date.today().strftime("%Y-%m-%d"))
-        save_path = "./res/" + today + "/"
+        save_path = "./res/" + str(datetime.date.today().strftime("%Y-%m-%d")) + "/"
         if os.path.exists(save_path) != True:
             os.mkdir(save_path)
         with open(save_path + symbol.lower() + "_input.npy", "wb") as f:
@@ -82,5 +81,4 @@ class Futures:
                 print("  " + instruction)
                 summary.write("  " + instruction + "\n")
         realtime_validation()
-        historical_validation(today)
 
