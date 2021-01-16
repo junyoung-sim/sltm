@@ -53,8 +53,6 @@ def backtest_accuracy(model=""):
     print(sum([1 for val in acc if val > 50.00]) * 100 / len(acc))
 
 def realtime_validation():
-    if datetime.datetime.today().weekday() >= 5:
-        return
     dates = [d for d in os.listdir("./res/") if d != ".DS_Store"]
     for date in dates:
         if date != datetime.datetime.today().strftime("%Y-%m-%d"):

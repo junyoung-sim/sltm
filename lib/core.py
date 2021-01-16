@@ -50,6 +50,7 @@ class Futures:
                 np.save(f, actual)
             with open(self.model_path + "backtest/output.npy", "wb") as f:
                 np.save(f, test_result)
+            backtest_evaluation(self.name)
     def save_trained_data(self, symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         dataset = process_timeseries(symbol, start, end)
         self.model.initialize(dataset)

@@ -38,7 +38,7 @@ def differential_analysis(line=[]):
          instructions.append(instruction)
     return instructions
 
-def backtest_accuracy(model=""):
+def backtest_evaluation(model=""):
     actual = list(np.load("./models/" + model + "/backtest/actual.npy"))
     backtest = list(np.load("./models/" + model + "/backtest/output.npy"))
     acc = []
@@ -48,13 +48,11 @@ def backtest_accuracy(model=""):
             backtest_direction = [1 if val > 0.00 else 0 for val in differential(backtest[d])]
             correct = sum([1 for i in range(len(actual_direction)) if actual_direction[i] == backtest_direction[i]])
             acc.append(correct * 100 / len(actual_direction))
-            print("#{}: {}%" .format(d, acc[-1]))
+            #print("#{}: {}%" .format(d, acc[-1]))
             f.write("#{}: {}%\n" .format(d, acc[-1]))
-    print(sum([1 for val in acc if val > 50.00]) * 100 / len(acc))
+    print("Backtest Correctness Probability: {}%" .format(sum([1 for val in acc if val > 50.00]) * 100 / len(acc)))
 
 def realtime_validation():
-    if datetime.datetime.today().weekday() >= 5:
-        return
     dates = [d for d in os.listdir("./res/") if d != ".DS_Store"]
     for date in dates:
         if date != datetime.datetime.today().strftime("%Y-%m-%d"):
