@@ -4,10 +4,14 @@
 #       0       1     2     3        4         5           6           7        8
 # ./futures.py mode model symbol start_date end_date learning_rate iteration backtest
 
-import sys
+import os, sys
 from lib import Futures
 
+#def init():
+    # check if required directories exist
+
 if __name__ == "__main__":
+    init()
     model = Futures(sys.argv[2])
     if sys.argv[1] == "train":
         model.train(sys.argv[3], sys.argv[4], sys.argv[5], float(sys.argv[6]), int(sys.argv[7]), int(sys.argv[8]))
