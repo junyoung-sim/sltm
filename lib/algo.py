@@ -18,7 +18,7 @@ def differential_analysis(line=[]):
     coefficient = differential(line)
     curve_point = []
     for i in range(len(coefficient) - 1):
-        if coefficient[i] / abs(coefficient[i]) != coefficient[i+1] / abs(coefficient[i+1]):
+        if coefficient[i] / abs(coefficient[i]) != coefficient[i+1] / abs(coefficient[i+1]): # identify when direction of slope alters
             curve_point.append(i)
     dates, count = [], 0
     while len(dates) != len(line):
@@ -41,16 +41,18 @@ def differential_analysis(line=[]):
 def backtest_evaluation(model=""):
     actual = list(np.load("./models/" + model + "/backtest/actual.npy"))
     backtest = list(np.load("./models/" + model + "/backtest/output.npy"))
-    acc = []
+    accuracy, correctness_probability = [], float()
     with open("./models/" + model + "/backtest/accuracy", "w+") as f:
-        for d in range(len(actual)):
+        for d in range(len(actual)): # evaluate prediction accuracy and correctness probability
             actual_direction = [1 if val > 0.00 else 0 for val in differential(actual[d])]
             backtest_direction = [1 if val > 0.00 else 0 for val in differential(backtest[d])]
             correct = sum([1 for i in range(len(actual_direction)) if actual_direction[i] == backtest_direction[i]])
-            acc.append(correct * 100 / len(actual_direction))
-            #print("#{}: {}%" .format(d, acc[-1]))
-            f.write("#{}: {}%\n" .format(d, acc[-1]))
-    print("Backtest Correctness Probability: {}%" .format(sum([1 for val in acc if val > 50.00]) * 100 / len(acc)))
+            accuracy.append(correct * 100 / len(actual_direction))
+            f.write("#{}: {}%\n" .format(d, accuracy[-1]))
+        correctness_probability = sum([1 for val in accuracy if val > 50.00]) * 100 / len(accuracy)
+        f.write("Backtest Correctness Probability: {}%" .format(correctness_probability))
+    profit = []
+    #for pred in backtest: # evalaute expected profit from each prediction
 
 def realtime_validation():
     dates = [d for d in os.listdir("./res/") if d != ".DS_Store"]

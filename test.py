@@ -1,3 +1,4 @@
 
-from lib.algo import backtest_accuracy
-backtest_accuracy("test")
+from lib.algo import backtest_evaluation
+backtest_evaluation("spy")
+
