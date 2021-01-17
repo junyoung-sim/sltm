@@ -20,7 +20,7 @@ def plot_results(results=[], actual=[], save_path=""): # use for comparing corre
         plt.savefig(save_path + "sample" + str(i) + ".png")
         loop.update(1)
 
-def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"): # generate training dataset
+def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"): # generate dataset
     input_set, output_set = [], []
     stock = YahooFinance(symbol.lower(), start, end).get("prices")
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
@@ -50,12 +50,13 @@ class Futures:
                 np.save(f, actual)
             with open(self.model_path + "backtest/output.npy", "wb") as f:
                 np.save(f, test_result)
+            backtest_evaluation(self.name)
     def save_trained_data(self, symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         dataset = process_timeseries(symbol, start, end)
         self.model.initialize(dataset)
         prediction = self.model.run()
         plot_results(prediction, dataset.get("output"), self.model_path + "trained-samples/")
-    def run(self, symbol=""):
+    def run(self, symbol=""): # get predictions from current time period
         stock = YahooFinance(symbol.lower(), "2015-01-01").get("prices")
         test_input = np.array([normalize(mavg(stock[-171:], 50)).reshape(11,11)]) # *** PARAMETER TUNING *** 
         self.model.initialize({"input": test_input, "output": []})
