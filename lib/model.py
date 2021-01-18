@@ -107,7 +107,7 @@ class Model:
             "learning_rate": learning_rate
         }
         decoder = DeepNeuralNetwork(self.path, decoder_config)
-        # testing dataset will automatically partitioning before the optimization
+        # testing dataset will be automatically partitioned before optimization
         test_result = decoder.train(encoded, output, iteration, 0.05 if test != 0 else 0.00)
         self.save()
         return test_result

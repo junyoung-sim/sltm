@@ -7,8 +7,12 @@
 import os, sys
 from lib import Futures
 
-#def init():
+def init():
     # check if required directories exist
+    required_directories = ["./data/", "./models/", "./res/"]
+    for directory in required_directories:
+        if os.path.exists(directory) != True:
+            os.mkdir(directory)
 
 if __name__ == "__main__":
     init()
@@ -19,8 +23,6 @@ if __name__ == "__main__":
         model.save_trained_data(sys.argv[3], sys.argv[4], sys.argv[5])
     elif sys.argv[1] == "run":
         model.run(sys.argv[3])
-    elif sys.argv[1] == "run_by_date":
-        model.run_by_date(sys.argv[3], sys.argv[4])
     else:
         print("Invalid argument was given")
 

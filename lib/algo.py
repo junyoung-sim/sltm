@@ -51,8 +51,16 @@ def backtest_evaluation(model=""):
             f.write("#{}: {}%\n" .format(d, accuracy[-1]))
         correctness_probability = sum([1 for val in accuracy if val > 50.00]) * 100 / len(accuracy)
         f.write("Backtest Correctness Probability: {}%" .format(correctness_probability))
+    # evaluate expected profit from each prediction for performance evaluation
+    ratio = 0.6
+    stock = 0
+    shares = 0
+    cash = 1000
+    balance = cash
+    # increase stock asset ratio during an increasing trend
+    # decrease stock asset ratio during an decreasing trend
     profit = []
-    #for pred in backtest: # evalaute expected profit from each prediction
+    #for pred in backtest:
 
 def realtime_validation():
     dates = [d for d in os.listdir("./res/") if d != ".DS_Store"]
