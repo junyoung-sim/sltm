@@ -7,8 +7,8 @@
 #include <tuple>
 
 #define CONV_SIZE 0
-#define STRIDE 1
-#define PADDING 2
+#define STRIDE    1
+#define PADDING   2
 #define POOL_TYPE 3
 #define POOL_SIZE 4
 
@@ -29,8 +29,8 @@ public:
     Layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size, std::vector<std::vector<float>> kernel_source): kernel(kernel_source) {
         // layer configurations
         std::get<CONV_SIZE>(attributes) = conv_size;
-        std::get<STRIDE>(attributes) = stride;
-        std::get<PADDING>(attributes) = padding;
+        std::get<STRIDE>(attributes)    = stride;
+        std::get<PADDING>(attributes)   = padding;
         std::get<POOL_TYPE>(attributes) = pool_type;
         std::get<POOL_SIZE>(attributes) = pool_size;
         if(kernel.empty()) {
@@ -51,12 +51,13 @@ public:
 class Futures
 {
 private:
-    std::string name, path;
+    std::string model, path;
     std::vector<Layer> layer;
 public:
-    Futures(std::string model_name): name(model_name), path("./models/" + model_name) {}
-    void load();
+    Futures(std::string name): model(name), path("./models/" + name) {}
     void save();
+    void load();
+    void initialize();
     void add_layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size);
     void encode();
     void train(float learning_rate, unsigned int iteration, bool backtest);
