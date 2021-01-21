@@ -18,7 +18,7 @@ def init():
         if os.path.exists(d) != True:
             os.mkdir(d)
     # build Futures
-    os.system("./scripts/exec make")
+    os.system("./scripts/launch make")
 
 def train():
     symbol, start, end = sys.argv[3], sys.argv[4], sys.argv[5]

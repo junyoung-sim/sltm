@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ $1 == "make" ]
+then
+   g++ -std=c++11 ./src/main.cpp ./src/futures.cpp -o futures
+fi
+
+if [ $1 == "train" ]
+then
+   #  1       2         3       4         5           6           7        8
+   # mode model_name symbol start_date end_date learning_rate iteration backtest
+   ./futures $1 $2 $3 $4 $5 $6 $7 $8
+fi
