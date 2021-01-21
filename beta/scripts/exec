@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ $1 == "make" ]
+then
+   g++ -std=c++11 ./src/main.cpp ./src/futures.cpp -o futures
+fi
+
+#if [ $1 == "train" ]
+#then
+#fi
