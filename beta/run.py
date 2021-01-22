@@ -20,13 +20,24 @@ model_path = "./models/" + model
 
 def init():
     # initialize required root and model file system
+    print("\nInitializing root and model file system...")
     required = [
-        "./temp", "./data", "./models", model_path, model_path + "/layers", model_path + "/kernels", model_path + "/dnn", model_path + "/res"
+        "./temp",
+        "./data",
+        "./models",
+        model_path,
+        model_path + "/layers", 
+        model_path + "/kernels",
+        model_path + "/dnn",
+        model_path + "/backtest",
+        model_path + "/trained-samples",
+        model_path + "/res"
     ]
     for d in required:
         if os.path.exists(d) != True:
             os.mkdir(d)
     # build Futures
+    print("Building Futures...\n")
     os.system("./scripts/launch make")
 
 def train():

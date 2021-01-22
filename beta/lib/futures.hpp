@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <fstream>
 #include <cstring>
 #include <vector>
 #include <tuple>
@@ -28,11 +27,7 @@ private:
 public:
     Layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size, std::vector<std::vector<float>> kernel_source): kernel(kernel_source) {
         // layer configurations
-        std::get<CONV_SIZE>(attributes) = conv_size;
-        std::get<STRIDE>(attributes)    = stride;
-        std::get<PADDING>(attributes)   = padding;
-        std::get<POOL_TYPE>(attributes) = pool_type;
-        std::get<POOL_SIZE>(attributes) = pool_size;
+        attributes = make_tuple(conv_size, stride, padding, pool_type, pool_size);
         if(kernel.empty()) {
             // generate convolution kernel
             for(unsigned int i = 0; i < conv_size; i++) {
@@ -46,6 +41,7 @@ public:
         }
     }
     std::tuple<unsigned int, unsigned int, bool, std::string, unsigned int> get_attributes() { return attributes; }
+    std::vector<std::vector<float>> get_kernel() { return kernel; }
 };
 
 class Futures
@@ -53,6 +49,7 @@ class Futures
 private:
     std::string model, path;
     std::vector<Layer> layer;
+    std::vector<Array> input, output;
 public:
     Futures(std::string name): model(name), path("./models/" + name) {}
     void save();
