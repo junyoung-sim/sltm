@@ -55,11 +55,11 @@ void Futures::load() {
                 // sort out the values of the attributes of each layer
                 if(line[i] != ' ') val += line[i];
                 else {
-                    if(val_count == 0) conv_size = stoi(val);
-                    else if(val_count == 1) stride = stoi(val);
+                    if(val_count == 0) conv_size = stoul(val);
+                    else if(val_count == 1) stride = stoul(val);
                     else if(val_count == 2) padding = stoi(val);
                     else if(val_count == 3) pool_type = val;
-                    else pool_size = stoi(val);
+                    else pool_size = stoul(val);
                     val_count++;
                     val = "";
                 }
@@ -86,11 +86,14 @@ void Futures::load() {
         }
         f1.close();
     }
-    if(!layers_read.empty()) layer = layers_read; 
-}
-
-void Futures::initialize() {
-
+    if(!layers_read.empty()) layer = layers_read;
+    // display layer attributes
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << "                   conv_size  stride  padding  pool_type  pool_size" << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+    for(unsigned int l = 0; l < layer.size(); l++) {
+        cout << "Encoder Layer #" << l << ":      " << get<CONV_SIZE>(layer[l].get_attributes()) << "        " << get<STRIDE>(layer[l].get_attributes()) << "        " << get<PADDING>(layer[l].get_attributes()) << "        " << get<POOL_TYPE>(layer[l].get_attributes()) << "         " << get<POOL_SIZE>(layer[l].get_attributes());
+    }
 }
 
 void Futures::add_layer(unsigned int conv_size, unsigned int stride, bool padding, string pool_type, unsigned int pool_size) {
