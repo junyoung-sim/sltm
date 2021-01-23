@@ -11,12 +11,13 @@
 #define POOL_TYPE 3
 #define POOL_SIZE 4
 
-class Array
+class Data
 {
 private:
-   std::vector<std::vector<float>> data;
+   std::vector<std::vector<float>> input;
+   std::vector<float> output;
 public:
-   Array(std::vector<std::vector<float>> source): data(source) {}
+   Data(std::vector<std::vector<float>> input_source, std::vector<float> output_source): input(input_source), output(output_source) {}
 };
 
 class Layer
@@ -49,7 +50,7 @@ class Futures
 private:
     std::string model, path;
     std::vector<Layer> layer;
-    std::vector<Array> input, output;
+    std::vector<Data> dataset;
 public:
     Futures(std::string name): model(name), path("./models/" + name) {}
     void save();
