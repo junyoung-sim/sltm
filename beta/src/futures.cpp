@@ -13,14 +13,13 @@ void Futures::save() {
     ofstream f1(path + "/layers");
     if(f1.is_open()) {
         for(unsigned int l = 0; l < layer.size(); l++) {
-            tuple<unsigned int, unsigned int, bool, string, unsigned int> attributes = layer[l].get_attributes();
             vector<vector<float>> kernel = layer[l].get_kernel();
-            // save the attributes of each layer
-            f1 << get<CONV_SIZE>(attributes) << " ";
-            f1 << get<STRIDE>(attributes) << " ";
-            f1 << get<PADDING>(attributes) << " ";
-            f1 << get<POOL_TYPE>(attributes) << " ";
-            f1 << get<POOL_SIZE>(attributes) << " ";
+            // save the attributes of each layer 
+            f1 << get<CONV_SIZE>(layer[l].get_attributes()) << " ";
+            f1 << get<STRIDE>(layer[l].get_attributes()) << " ";
+            f1 << get<PADDING>(layer[l].get_attributes()) << " ";
+            f1 << get<POOL_TYPE>(layer[l].get_attributes()) << " ";
+            f1 << get<POOL_SIZE>(layer[l].get_attributes()) << " ";
             if(l != layer.size() - 1) f1 << "\n";
             // save each layer's kernel
             ofstream f2(path + "/kernels/kernel" + to_string(l));
@@ -44,21 +43,21 @@ void Futures::load() {
     vector<Layer> layers_read;
     ifstream f1(path + "/layers");
     if(f1.is_open()) {
+        bool padding;
+        string pool_type;
+        unsigned int conv_size, pool_size, stride;
         while(getline(f1, line)) {
-            amount_of_layers++;
             string val;
             unsigned int val_count = 0;
-            unsigned int conv_size, pool_size, stride;
-            string pool_type;
-            bool padding;
+            amount_of_layers++;
             for(unsigned int i = 0; i < line.length(); i++) {
                 // sort out the values of the attributes of each layer
                 if(line[i] != ' ') val += line[i];
                 else {
-                    if(val_count == 0) conv_size = stoul(val);
-                    else if(val_count == 1) stride = stoul(val);
-                    else if(val_count == 2) padding = stoi(val);
-                    else if(val_count == 3) pool_type = val;
+                    if(val_count == CONV_SIZE) conv_size = stoul(val);
+                    else if(val_count == STRIDE) stride = stoul(val);
+                    else if(val_count == PADDING) padding = stoi(val);
+                    else if(val_count == POOL_TYPE) pool_type = val;
                     else pool_size = stoul(val);
                     val_count++;
                     val = "";
@@ -88,12 +87,15 @@ void Futures::load() {
     }
     if(!layers_read.empty()) layer = layers_read;
     // display layer attributes
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << "                   conv_size  stride  padding  pool_type  pool_size" << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "Encoder Attributes" << endl;
+    cout << "-------------------------------------------------------" << endl;
+    cout << "     conv_size  stride  padding  pool_type  pool_size" << endl;
+    cout << "-------------------------------------------------------" << endl;
     for(unsigned int l = 0; l < layer.size(); l++) {
-        cout << "Encoder Layer #" << l << ":      " << get<CONV_SIZE>(layer[l].get_attributes()) << "        " << get<STRIDE>(layer[l].get_attributes()) << "        " << get<PADDING>(layer[l].get_attributes()) << "        " << get<POOL_TYPE>(layer[l].get_attributes()) << "         " << get<POOL_SIZE>(layer[l].get_attributes());
+        cout << "#" << l << ":      " << get<CONV_SIZE>(layer[l].get_attributes()) << "        " << get<STRIDE>(layer[l].get_attributes()) << "        " << get<PADDING>(layer[l].get_attributes()) << "        " << get<POOL_TYPE>(layer[l].get_attributes()) << "         " << get<POOL_SIZE>(layer[l].get_attributes()) << " " << endl;
     }
+    // load input from ./temp (and output, if applicable)
+    
 }
 
 void Futures::add_layer(unsigned int conv_size, unsigned int stride, bool padding, string pool_type, unsigned int pool_size) {

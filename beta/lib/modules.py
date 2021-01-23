@@ -32,8 +32,16 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
         loop.update(1)
     loop.close()
     input_set, output_set = np.array(input_set), np.array(output_set)
-    # write dataset into a binary file (required when training a model)
+    # write dataset into a file (required when training a model)
     if write_data:
-        input_set.astype("float64").tofile("./temp/input")
-        output_set.astype("float64").tofile("./temp/output")
+        with open("./temp/input", "w+") as f1, open("./temp/output", "w+") as f2:
+            for i in range(input_set.shape[0]): # very dumb and memory-inefficient (but easy for c code)
+                for val in input_set[i].flatten():
+                    f1.write(str(val) + " ")
+                for val in output_set[i]:
+                    f2.write(str(val) + " ")
+                if i != input_set.shape[0] - 1:
+                    f1.write("\n")
+                    f2.write("\n")
     return {"input": input_set, "output": output_set}
+
