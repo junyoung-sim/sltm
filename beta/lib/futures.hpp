@@ -17,7 +17,11 @@ private:
    std::vector<std::vector<float>> input;
    std::vector<float> output;
 public:
-   Data(std::vector<std::vector<float>> input_source, std::vector<float> output_source): input(input_source), output(output_source) {}
+   Data() {}
+   void set_input(std::vector<std::vector<float>> source) { input = source; }
+   void set_output(std::vector<float> source) { output = source; }
+   std::vector<std::vector<float>> get_input() { return input; }
+   std::vector<float> get_output() { return output; }
 };
 
 class Layer
@@ -55,7 +59,6 @@ public:
     Futures(std::string name): model(name), path("./models/" + name) {}
     void save();
     void load();
-    void initialize();
     void add_layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size);
     void encode();
     void train(float learning_rate, unsigned int iteration, bool backtest);

@@ -27,10 +27,9 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
     for i in range(len(stock)-206):
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
-        input_set.append(normalize(mavg(stock[i:i+171], 50)).reshape(11,11))
-        output_set.append(normalize(mavg(stock[i+121:i+206], 10)))
+        input_set.append(normalize(mavg(stock[i:i+171], 50)).reshape(11,11)) # *** HARD-CODED PARAMETER ***
+        output_set.append(normalize(mavg(stock[i+121:i+206], 10)))           # *** HARD-CODED PARAMETER ***
         loop.update(1)
-    loop.close()
     input_set, output_set = np.array(input_set), np.array(output_set)
     # write dataset into a file (required when training a model)
     if write_data:

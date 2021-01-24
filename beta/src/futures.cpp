@@ -38,18 +38,19 @@ void Futures::save() {
 }
 
 void Futures::load() {
-    string line;
+    string line, val;
     unsigned int amount_of_layers = 0;
     vector<Layer> layers_read;
-    ifstream f1(path + "/layers");
-    if(f1.is_open()) {
+
+    ifstream f1, f2;
+    f1.open(path + "/layers");
+    if(f1.good()) {
         bool padding;
         string pool_type;
         unsigned int conv_size, pool_size, stride;
         while(getline(f1, line)) {
-            string val;
-            unsigned int val_count = 0;
             amount_of_layers++;
+            unsigned int val_count = 0;
             for(unsigned int i = 0; i < line.length(); i++) {
                 // sort out the values of the attributes of each layer
                 if(line[i] != ' ') val += line[i];
@@ -65,10 +66,9 @@ void Futures::load() {
             }
             // read each layer's kernel
             vector<vector<float>> kernel;
-            ifstream f2(path + "/kernels/kernel" + to_string(amount_of_layers - 1));
-            if(f2.is_open()) {
+            f2.open(path + "/kernels/kernel" + to_string(amount_of_layers - 1));
+            if(f2.good()) {
                 while(getline(f2, line)) {
-                    val = "";
                     vector<float> row;
                     for(unsigned int i = 0; i < line.length(); i++) {
                         if(line[i] != ' ') val += line[i];
@@ -95,7 +95,47 @@ void Futures::load() {
         cout << "#" << l << ":      " << get<CONV_SIZE>(layer[l].get_attributes()) << "        " << get<STRIDE>(layer[l].get_attributes()) << "        " << get<PADDING>(layer[l].get_attributes()) << "        " << get<POOL_TYPE>(layer[l].get_attributes()) << "         " << get<POOL_SIZE>(layer[l].get_attributes()) << " " << endl;
     }
     // load input from ./temp (and output, if applicable)
-    
+    f1.open("./temp/input");
+    if(f1.good()) {
+        cout << "\nReading ./temp/input ... ";
+        while(getline(f1, line)) {
+            vector<float> row;
+            vector<vector<float>> input;
+            for(unsigned int i = 0; i < line.length(); i++) {
+                if(line[i] != ' ') val += line[i];
+                else {
+                    row.push_back(stof(val));
+                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; SET ACCORDINGLY WITH PARAMETER IN "./lib/modules.py:30" ***
+                         input.push_back(row);
+                         row.clear();
+                    }
+                    val = "";
+                }
+            }
+            dataset.push_back(Data());
+            dataset[dataset.size() - 1].set_input(input);
+        }
+        cout << "DONE!" << endl;
+        f1.close();
+    }
+    f1.open("./temp/output");
+    if(f1.good()) {
+        cout << "Reading ./temp/output ... ";
+        for(unsigned int d = 0; d < dataset.size(); d++) {
+            getline(f1, line);
+            vector<float> output;
+            for(unsigned int i = 0; i < line.length(); i++) {
+                if(line[i] != ' ') val += line[i];
+                else {
+                    output.push_back(stof(val));
+                    val = "";
+                }
+            }
+            dataset[d].set_output(output);
+        }
+        cout << "DONE!" << endl;
+        f1.close();
+    }
 }
 
 void Futures::add_layer(unsigned int conv_size, unsigned int stride, bool padding, string pool_type, unsigned int pool_size) {

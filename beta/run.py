@@ -50,7 +50,8 @@ def train():
     # execute shell script to run Futures (built in C++)
     # Futures will read the written dataset (in binary) and encode the dataset
     # after encoding, "dnn.py" will be called from Futures to train the deep neural network (TensorFlow)
-    #os.system("./scripts/launch")
+    print("\n")
+    os.system("./futures")
 
 if __name__ == "__main__":
     init()
