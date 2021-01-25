@@ -136,12 +136,20 @@ void Futures::load() {
         }
         cout << "DONE!" << endl;
         f1.close();
-    }
-    
+    } 
 }
 
 void Futures::add_layer(unsigned int conv_size, unsigned int stride, bool padding, string pool_type, unsigned int pool_size) {
     vector<vector<float>> empty_kernel;
     layer.push_back(Layer(conv_size, stride, padding, pool_type, pool_size, empty_kernel));
+}
+
+void Futures::encode() {
+    vector<vector<float>> input = dataset[5068].get_input();
+    for(unsigned int l = 0; l < layer.size(); l++) {
+        // padding (optional; check layer attributes)
+        // convolution
+        // pooling
+    }
 }
 
