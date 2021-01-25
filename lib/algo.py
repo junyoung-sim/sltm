@@ -49,7 +49,7 @@ def backtest_evaluation(model=""):
             correct = sum([1 for i in range(len(actual_direction)) if actual_direction[i] == backtest_direction[i]])
             accuracy.append(correct * 100 / len(actual_direction))
             f.write("#{}: {}%\n" .format(d, accuracy[-1]))
-        correctness_probability = sum([1 for val in accuracy if val > 50.00]) * 100 / len(accuracy)
+        correctness_probability = sum([1 for val in accuracy if val > 65.00]) * 100 / len(accuracy)
         f.write("Backtest Correctness Probability: {}%" .format(correctness_probability))
     # evaluate expected profit from each prediction for performance evaluation
     ratio = 0.6

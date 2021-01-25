@@ -118,6 +118,7 @@ void Futures::load() {
         cout << "DONE!" << endl;
         f1.close();
     }
+    // load output from ./temp (necessary when training)
     f1.open("./temp/output");
     if(f1.good()) {
         cout << "Reading ./temp/output ... ";
@@ -136,6 +137,7 @@ void Futures::load() {
         cout << "DONE!" << endl;
         f1.close();
     }
+    
 }
 
 void Futures::add_layer(unsigned int conv_size, unsigned int stride, bool padding, string pool_type, unsigned int pool_size) {
