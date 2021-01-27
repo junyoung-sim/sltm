@@ -14,14 +14,10 @@
 class Data
 {
 private:
-   std::vector<std::vector<float>> input;
-   std::vector<float> output;
+   std::vector<std::vector<float>> data;
 public:
-   Data() {}
-   void set_input(std::vector<std::vector<float>> source) { input = source; }
-   void set_output(std::vector<float> source) { output = source; }
-   std::vector<std::vector<float>> get_input() { return input; }
-   std::vector<float> get_output() { return output; }
+   Data(std::vector<std::vector<float>> source): data(source) {}
+   std::vector<std::vector<float>> get_data() { return data; }
 };
 
 class Layer
@@ -49,19 +45,17 @@ public:
     std::vector<std::vector<float>> get_kernel() { return kernel; }
 };
 
-class Futures
+class Encoder
 {
 private:
     std::string model, path;
     std::vector<Layer> layer;
     std::vector<Data> dataset;
 public:
-    Futures(std::string name): model(name), path("./models/" + name) {}
+    Encoder(std::string name): model(name), path("./models/" + name) {}
     void save();
     void load();
     void add_layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size);
     void encode();
-    void train(float learning_rate, unsigned int iteration, bool backtest);
-    void run();
 };
 

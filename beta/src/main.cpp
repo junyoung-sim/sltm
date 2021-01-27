@@ -1,14 +1,13 @@
 
 #include <iostream>
-#include "../lib/futures.hpp"
+#include "../lib/encoder.hpp"
 
-int main()
+int main(int argc, char *argv[])
 {
-    Futures model("test");
+    Encoder model("test");
     model.add_layer(2, 1, false, "max", 2);
     model.load();
     model.encode();
-
     model.save();
     return 0;
 }

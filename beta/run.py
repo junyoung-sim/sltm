@@ -51,7 +51,7 @@ def train():
     # Futures will read the written dataset (in binary) and encode the dataset
     # after encoding, "dnn.py" will be called from Futures to train the deep neural network (TensorFlow)
     print("\n")
-    os.system("./futures")
+    os.system("./encoder")
 
 if __name__ == "__main__":
     init()
