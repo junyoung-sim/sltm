@@ -23,7 +23,7 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
     """ Processes financial time series. ***HARD-CODED PARAMETERS*** """
     input_set, output_set = [], []
     raw = YahooFinance(symbol, start, end)
-    stock, dates = raw.get("prices"), raw.get("dates")
+    stock, dates = raw["prices"], raw["dates"]
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
     for i in range(len(stock)-206):
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
@@ -33,14 +33,11 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
     input_set, output_set = np.array(input_set), np.array(output_set)
     # write dataset into a file (required when training a model)
     if write_data:
-        with open("./temp/input", "w+") as f1, open("./temp/output", "w+") as f2:
-            for i in range(input_set.shape[0]): # very dumb and memory-inefficient (but easy for c code)
+        with open("./temp/input", "w+") as f:
+            for i in range(input_set.shape[0]): # very dumb and memory-inefficient (but easy for c code to read)
                 for val in input_set[i].flatten():
-                    f1.write(str(val) + " ")
-                for val in output_set[i]:
-                    f2.write(str(val) + " ")
+                    f.write(str(val) + " ")
                 if i != input_set.shape[0] - 1:
-                    f1.write("\n")
-                    f2.write("\n")
+                    f.write("\n")
     return {"input": input_set, "output": output_set}
 

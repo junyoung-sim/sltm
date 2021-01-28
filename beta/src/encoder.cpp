@@ -97,7 +97,6 @@ void Encoder::load() {
     // load input from ./temp
     f1.open("./temp/input");
     if(f1.good()) {
-        cout << "\nReading ./temp/input ... ";
         while(getline(f1, line)) {
             vector<float> row;
             vector<vector<float>> input;
@@ -114,7 +113,6 @@ void Encoder::load() {
             }
             dataset.push_back(Data(input));
         }
-        cout << "DONE!" << endl;
         f1.close();
     }
 }
@@ -191,5 +189,23 @@ void Encoder::encode() {
         }
     }
     // write encoded input to ./temp
+    ofstream f("./temp/encoded");
+    if(f.is_open()) {
+        for(unsigned int d = 0; d < encoded.size(); d++) {
+            vector<float> data;
+            // flatten encoded data
+            for(unsigned int i = 0; i < encoded[d].size(); i++) {
+                for(unsigned int j = 0; j < encoded[d][i].size(); j++) {
+                    data.push_back(encoded[d][i][j]);
+                }
+            }
+            for(unsigned int i = 0; i < data.size(); i++) {
+                f << data[i];
+                if(i != data.size() - 1) f << " ";
+            }
+            if(d != encoded.size() - 1) f << "\n";
+        }
+        f.close();
+    }
 }
 

@@ -17,7 +17,7 @@ private:
    std::vector<std::vector<float>> data;
 public:
    Data(std::vector<std::vector<float>> source): data(source) {}
-   std::vector<std::vector<float>> get_data() { return data; }
+   std::vector<std::vector<float>> get_data() { return data; } 
 };
 
 class Layer

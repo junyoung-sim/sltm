@@ -22,7 +22,7 @@ def plot_results(results=[], actual=[], save_path=""): # use for comparing corre
 
 def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"): # generate dataset
     input_set, output_set = [], []
-    stock = YahooFinance(symbol.lower(), start, end).get("prices")
+    stock = YahooFinance(symbol.lower(), start, end)["prices"]
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
     for i in range(0, len(stock)-206):
         loop.set_description("Processing time series...")

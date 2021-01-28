@@ -20,7 +20,7 @@ model_path = "./models/" + model
 
 def init():
     # initialize required root and model file system
-    print("\nInitializing root and model file system...")
+    print("\nInitializing file system...")
     required = [
         "./temp",
         "./data",
@@ -36,24 +36,35 @@ def init():
     for d in required:
         if os.path.exists(d) != True:
             os.mkdir(d)
-    # build Futures
-    print("Building Futures...\n")
+    # clear ./temp
+    for root, dirs, files in os.walk("./temp"):
+        for f in files:
+            os.system("rm -rf ./temp/" + f)
+    # build encoder
+    print("Building encoder...\n")
     os.system("./scripts/launch make")
 
 def train():
     date2         = sys.argv[5]
-    learning_rate = sys.argv[6] # needs conversion to float
-    iteration     = sys.argv[7] # needs conversion to unsigned int
-    backtest      = sys.argv[8] # needs conversion to unsigned int (0 or 1)
-    # download, process, and save financial time series 
+    learning_rate = float(sys.argv[6])
+    iteration     = int(sys.argv[7])
+    backtest      = int(sys.argv[8])
+    # download, process, and save financial time series in ./temp
     dataset = process_timeseries(symbol, date1, date2, True)
-    # execute shell script to run Futures (built in C++)
-    # Futures will read the written dataset (in binary) and encode the dataset
-    # after encoding, "dnn.py" will be called from Futures to train the deep neural network (TensorFlow)
-    print("\n")
-    os.system("./encoder")
+    # run the encoder (C coded executable)
+    print("\nRunning and reading data returned from encoder...\n")
+    os.system("./encoder " + model)
+    print("")
+    # read the encoded dataset written in ./temp by the encoder
+    encoded = []
+    with open("./temp/encoded", "r") as f:
+        for line in f.readlines():
+            encoded.append([float(val) for val in line.split(" ")]) # *** HARD-CODED PARAMETER ***
+    dataset["input"] = np.array(encoded)
+    print("{} samples (Size = {})\n{}" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
 
 if __name__ == "__main__":
     init()
     if sys.argv[1] == "train":
         train()
+
