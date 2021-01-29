@@ -61,7 +61,7 @@ def train():
         for line in f.readlines():
             encoded.append([float(val) for val in line.split(" ")]) # *** HARD-CODED PARAMETER ***
     dataset["input"] = np.array(encoded)
-    print("{} samples (Size = {})\n{}" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
+    print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
 
 if __name__ == "__main__":
     init()
