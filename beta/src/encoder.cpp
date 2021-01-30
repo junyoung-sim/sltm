@@ -97,7 +97,7 @@ void Encoder::load() {
     // load input from ./temp
     f1.open("./temp/input");
     if(f1.good()) {
-        while(getline(f1, line)) {
+        while(getline(f1, line)) { // each data sample is flattened to be written in a single line
             vector<float> row;
             vector<vector<float>> input;
             for(unsigned int i = 0; i < line.length(); i++) {

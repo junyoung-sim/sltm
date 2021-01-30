@@ -62,7 +62,15 @@ def train():
             encoded.append([float(val) for val in line.split(" ")]) # *** HARD-CODED PARAMETER ***
     dataset["input"] = np.array(encoded)
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
-
+    # train deep neural network    
+    hyper = {
+        "architecture":[[25,25],[25,100],[100,75]],
+        "activation": "relu",
+        "abs_synapse": 1.0,
+        "cost": "mse"
+    }
+    dnn = DeepNeuralNetwork(model_path, hyper)
+ 
 if __name__ == "__main__":
     init()
     if sys.argv[1] == "train":
