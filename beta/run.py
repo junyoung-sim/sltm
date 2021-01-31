@@ -48,9 +48,9 @@ def train():
     date2         = sys.argv[5]
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
-    backtest      = int(sys.argv[8])
+    backtest      = float(sys.argv[8])
     # download, process, and save financial time series in ./temp
-    dataset = process_timeseries(symbol, date1, date2, True)
+    dataset = process_timeseries(symbol, date1, date2, True)        # *** FUNCTION W/ HARD-CODED PARAMETER ***
     # run the encoder (C coded executable)
     print("\nRunning and reading data returned from encoder...\n")
     os.system("./encoder " + model)
@@ -64,12 +64,14 @@ def train():
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
     # train deep neural network    
     hyper = {
-        "architecture":[[25,25],[25,100],[100,75]],
+        "architecture":[[25,25],[25,100],[100,75]], # *** HARD-CODED PARAMETER ***
         "activation": "relu",
         "abs_synapse": 1.0,
-        "cost": "mse"
+        "cost": "mse",
+        "learning_rate": learning_rate
     }
     dnn = DeepNeuralNetwork(model_path, hyper)
+    dnn.train(dataset["input"], dataset["output"], iteration, backtest)
  
 if __name__ == "__main__":
     init()

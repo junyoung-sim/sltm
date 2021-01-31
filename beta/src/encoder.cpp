@@ -128,10 +128,10 @@ void Encoder::encode() {
         vector<vector<float>> input = dataset[d].get_data();
         for(unsigned int l = 0; l < layer.size(); l++) {
             // padding (optional; check layer attributes)
-            if(get<PADDING>(layer[l].get_attributes()) == true) {
+            if(get<PADDING>(layer[l].get_attributes()) == true) { // MERGE TWO PROCESSES (FUTURE UPDATE)
                 vector<vector<float>> pad;
                 for(unsigned int i = 0; i < input.size() + 2; i++) {
-                    pad.push_back(vector<float>(input.size() + 2, 0.00));
+                    pad.push_back(vector<float>(input.size() + 2, 0.00)); 
                 }
                 for(unsigned int i = 1; i < pad.size() - 1; i++) {
                     for(unsigned int j = 1; j < pad[i].size() - 1; j++) {
