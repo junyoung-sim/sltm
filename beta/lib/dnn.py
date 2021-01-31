@@ -10,8 +10,8 @@ tf.disable_v2_behavior()
 
 class DeepNeuralNetwork:
     def __init__(self, path="", hyper={}):
-        """ hyper = {"architecture", "activation", "abs_synapse", "cost", "learning_rate"} """
-        self.path = path + "/dnn/"
+        """ hyper = {"architecture", "activation", "abs_synapse", "learning_rate"} """
+        self.path = path + "/dnn"
         if self.load() == False: # if model does not exist
             # if the model exists, self.load() automatically loads hyperparameters that are saved
             self.hyper = hyper # load given hyperparameters
@@ -19,7 +19,6 @@ class DeepNeuralNetwork:
         architecture  = hyper["architecture"]
         activation    = hyper["activation"]  # relu is highly recommended
         abs_synapse   = hyper["abs_synapse"]
-        cost          = hyper["cost"]
         learning_rate = hyper["learning_rate"]
         # setup hidden layers
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
@@ -42,10 +41,7 @@ class DeepNeuralNetwork:
                 elif activation == "tanh":
                     self.layer.append(tf.nn.tanh(tf.matmul(self.layer[l-1], self.weights[l])))
         # setup cost function and optimizer
-        if cost == "mse":
-            self.cost = tf.reduce_mean(tf.squared_difference(self.output, self.layer[-1]))
-        elif cost == "cosine_similarity":
-            self.cost = tf.reduce_sum(tf.multiply(tf.nn.l2_normalize(self.output, 0), tf.nn.l2_normalize(self.layer[-1], 0)))
+        self.cost = tf.reduce_mean(tf.squared_difference(self.output, self.layer[-1])) # MeanSquaredError
         self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
         self.model = self.optimizer.minimize(self.cost, global_step=self.global_step)
         # setup TensorFlow session and saver
@@ -57,12 +53,12 @@ class DeepNeuralNetwork:
         else:
             self.sess.run(tf.global_variables_initializer())
     def save(self):
-        self.saver.save(self.sess, self.path + "checkpoint.ckpt", global_step=self.global_step)
-        with open(self.path + "hyperparameters", "w+") as f:
+        self.saver.save(self.sess, self.path + "/checkpoint.ckpt", global_step=self.global_step)
+        with open(self.path + "/hyperparameters", "w+") as f:
             f.write(json.dumps(self.hyper))
     def load(self):
         try:
-            with open(self.path + "hyperparameters", "r") as f:
+            with open(self.path + "/hyperparameters", "r") as f:
                 self.hyper = ast.literal_eval(f.read())
         except FileNotFoundError:
             return False

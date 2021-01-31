@@ -14,7 +14,6 @@ from lib import *
 mode   = sys.argv[1]
 model  = sys.argv[2]
 symbol = sys.argv[3]
-date1  = sys.argv[4]
 
 model_path = "./models/" + model
 
@@ -42,15 +41,16 @@ def init():
             os.system("rm -rf ./temp/" + f)
     # build encoder
     print("Building encoder...\n")
-    os.system("./scripts/launch make")
+    os.system("./scripts/build")
 
 def train():
+    date1         = sys.argv[4]
     date2         = sys.argv[5]
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
     backtest      = float(sys.argv[8])
     # download, process, and save financial time series in ./temp
-    dataset = process_timeseries(symbol, date1, date2, True)        # *** FUNCTION W/ HARD-CODED PARAMETER ***
+    dataset = process_timeseries(symbol, date1, date2, True)
     # run the encoder (C coded executable)
     print("\nRunning and reading data returned from encoder...\n")
     os.system("./encoder " + model)
@@ -59,15 +59,14 @@ def train():
     encoded = []
     with open("./temp/encoded", "r") as f:
         for line in f.readlines():
-            encoded.append([float(val) for val in line.split(" ")]) # *** HARD-CODED PARAMETER ***
+            encoded.append([float(val) for val in line.split(" ")])
     dataset["input"] = np.array(encoded)
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
-    # train deep neural network    
+    # train deep neural network
     hyper = {
         "architecture":[[25,25],[25,100],[100,75]], # *** HARD-CODED PARAMETER ***
         "activation": "relu",
         "abs_synapse": 1.0,
-        "cost": "mse",
         "learning_rate": learning_rate
     }
     dnn = DeepNeuralNetwork(model_path, hyper)
