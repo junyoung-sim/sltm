@@ -1,6 +1,0 @@
-tqdm
-numpy
-matplotlib
-tensorflow
-pyinstaller
-pandas-datareader

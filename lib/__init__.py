@@ -1,4 +1,4 @@
-from .util import *
+
+from .dnn import DeepNeuralNetwork
+from .modules import *
 from .algo import *
-from .model import *
-from .core import *
