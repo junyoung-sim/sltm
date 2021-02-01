@@ -1,6 +1,7 @@
 
 import os, logging, json, ast
 import tensorflow.compat.v1 as tf
+import matplotlib.pyplot as plt
 import numpy as np
 
 # suppress warnings from TensorFlow
@@ -11,7 +12,7 @@ tf.disable_v2_behavior()
 class DeepNeuralNetwork:
     def __init__(self, path="", hyper={}):
         """ hyper = {"architecture", "activation", "abs_synapse", "learning_rate"} """
-        self.path = path + "/dnn"
+        self.path = path
         if self.load() == False: # if model does not exist
             # if the model exists, self.load() automatically loads hyperparameters that are saved
             self.hyper = hyper # load given hyperparameters
@@ -47,18 +48,18 @@ class DeepNeuralNetwork:
         # setup TensorFlow session and saver
         self.sess = tf.Session()
         self.saver = tf.train.Saver(tf.global_variables())
-        ckpt = tf.train.get_checkpoint_state(self.path)
+        ckpt = tf.train.get_checkpoint_state(self.path + "/dnn")
         if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
             self.saver.restore(self.sess, ckpt.model_checkpoint_path) # load existing sessions saved in model directory
         else:
             self.sess.run(tf.global_variables_initializer())
     def save(self):
-        self.saver.save(self.sess, self.path + "/checkpoint.ckpt", global_step=self.global_step)
-        with open(self.path + "/hyperparameters", "w+") as f:
+        self.saver.save(self.sess, self.path + "/dnn/checkpoint.ckpt", global_step=self.global_step)
+        with open(self.path + "/dnn/hyperparameters", "w+") as f:
             f.write(json.dumps(self.hyper))
     def load(self):
         try:
-            with open(self.path + "/hyperparameters", "r") as f:
+            with open(self.path + "/dnn/hyperparameters", "r") as f:
                 self.hyper = ast.literal_eval(f.read())
         except FileNotFoundError:
             return False
@@ -75,4 +76,13 @@ class DeepNeuralNetwork:
                 cost = self.sess.run(self.cost, feed_dict={self.input: training_input, self.output: training_output})
                 print("ITERATION #{}: COST = {}" .format(i, cost))
         self.save()
+        if test != 0.00:
+            print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
+            backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
+            print("Saving backtest plots into ", self.path + "/backtest/ ...\n")
+            for i in range(backtest.shape[0]):
+                fig = plt.figure()
+                plt.plot(backtest[i], color="red")
+                plt.plot(test_output[i], color="green")
+                plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
 

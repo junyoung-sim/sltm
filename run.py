@@ -70,7 +70,7 @@ def train():
         "learning_rate": learning_rate
     }
     dnn = DeepNeuralNetwork(model_path, hyper)
-    dnn.train(dataset["input"], dataset["output"], iteration, backtest)
+    dnn.train(dataset["input"], dataset["output"], iteration, backtest) # trains and saves backtest plots
  
 if __name__ == "__main__":
     init()
