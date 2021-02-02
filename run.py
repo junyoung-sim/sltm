@@ -25,7 +25,6 @@ def init():
         "./data",
         "./models",
         model_path,
-        model_path + "/layers", 
         model_path + "/kernels",
         model_path + "/dnn",
         model_path + "/backtest",

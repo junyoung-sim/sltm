@@ -1,0 +1,8 @@
+0 ~ 20000: 2000-01-01 ~ 2020-12-31 (Backtest = True)
+    Last time series date: 2020-03-10
+    Input = 121, Output = 75 >> [25,25],[25,100],[100,75]
+    5078 samples (Training Cost = 0.026254, Backtesting Cost = 0.14932)
+
+20000 ~ 30000: 2000-01-01 ~ 2021-02-01 (Backtest = False)
+    Last time series date: 2020-04-07
+    5099 samples (Training Cost = 0.026938)

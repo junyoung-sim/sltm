@@ -79,7 +79,7 @@ class DeepNeuralNetwork:
         if test != 0.00:
             print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
             backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
-            print("Saving backtest plots into ", self.path + "/backtest/ ...\n")
+            print("\nSaving backtest plots into ", self.path + "/backtest/ ...\n")
             for i in range(backtest.shape[0]):
                 fig = plt.figure()
                 plt.plot(backtest[i], color="red")

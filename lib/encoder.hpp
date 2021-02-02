@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #define CONV_SIZE 0
 #define STRIDE    1
@@ -30,6 +31,7 @@ public:
         // layer configurations
         attributes = make_tuple(conv_size, stride, padding, pool_type, pool_size);
         if(kernel.empty()) {
+            srand(time(NULL));
             // if no kernel is given, then generate a random convolution kernel
             for(unsigned int i = 0; i < conv_size; i++) {
                 std::vector<float> row;
