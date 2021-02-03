@@ -8,6 +8,8 @@ read command line arguments in this following order:
 
 import os
 import sys
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 from lib import *
 
@@ -51,7 +53,7 @@ def train():
     # download, process, and save financial time series in ./temp
     dataset = process_timeseries(symbol, date1, date2, True)
     # run the encoder (C coded executable)
-    print("\nRunning and reading data returned from encoder...\n")
+    print("\n\nRunning and reading data returned from encoder...\n")
     os.system("./encoder " + model)
     print("")
     # read the encoded dataset written in ./temp by the encoder
@@ -70,9 +72,35 @@ def train():
     }
     dnn = DeepNeuralNetwork(model_path, hyper)
     dnn.train(dataset["input"], dataset["output"], iteration, backtest) # trains and saves backtest plots
- 
+
+def run():
+    # download and process lastest input sample
+    data = normalize(mavg(YahooFinance(symbol, "2019-01-01", "yyyy-mm-dd")["prices"][-171:], 50)) # *** HARD-CODED PARAMETER ***
+    # write processed input to ./temp
+    with open("./temp/input", "w+") as f:
+        for val in data:
+            f.write(str(val) + " ")
+    # run encoder (C coded executable)
+    os.system("./encoder " + model)
+    # read encdoed input
+    encoded = []
+    with open("./temp/encoded", "r") as f:
+        encoded = np.array([[float(val) for val in f.readline().split(" ")]])
+    print("\nEncoded input:\n", encoded)
+    # load model
+    dnn = DeepNeuralNetwork(model_path)
+    result = dnn.run(encoded)[0] # get result
+    # plot and save result
+    plt.plot(result, color="red")
+    plt.savefig(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
+    print("\nSaved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
+    with open(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
+        np.save(f, result)
+
 if __name__ == "__main__":
     init()
     if sys.argv[1] == "train":
         train()
+    elif sys.argv[1] == "run":
+        run()
 

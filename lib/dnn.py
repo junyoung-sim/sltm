@@ -17,10 +17,10 @@ class DeepNeuralNetwork:
             # if the model exists, self.load() automatically loads hyperparameters that are saved
             self.hyper = hyper # load given hyperparameters
         # load hyperparameters
-        architecture  = hyper["architecture"]
-        activation    = hyper["activation"]  # relu is highly recommended
-        abs_synapse   = hyper["abs_synapse"]
-        learning_rate = hyper["learning_rate"]
+        architecture  = self.hyper["architecture"]
+        activation    = self.hyper["activation"]  # relu is highly recommended
+        abs_synapse   = self.hyper["abs_synapse"]
+        learning_rate = self.hyper["learning_rate"]
         # setup hidden layers
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
         self.layer = [] # values in hidden layers
@@ -85,4 +85,7 @@ class DeepNeuralNetwork:
                 plt.plot(backtest[i], color="red")
                 plt.plot(test_output[i], color="green")
                 plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
+    def run(self, data=[]):
+        results = self.sess.run(self.layer[-1], feed_dict={self.input: data})
+        return results
 
