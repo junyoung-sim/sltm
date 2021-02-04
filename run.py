@@ -92,10 +92,12 @@ def run():
     result = dnn.run(encoded)[0] # get result
     # plot and save result
     plt.plot(result, color="red")
-    plt.savefig(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
+    plt.savefig(model_path + "/res/" + symbol + "-" +  datetime.today().strftime("%Y-%m-%d") + ".png")
     print("\nSaved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
-    with open(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
+    with open(model_path + "/res/" + symbol + "-" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
+    # run trend validation algorithm
+    trend_validation(model_path + "/res/")
 
 if __name__ == "__main__":
     init()
