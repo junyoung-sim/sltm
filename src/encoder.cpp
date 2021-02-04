@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -128,7 +127,7 @@ void Encoder::encode() {
         vector<vector<float>> input = dataset[d].get_data();
         for(unsigned int l = 0; l < layer.size(); l++) {
             // padding (optional; check layer attributes)
-            if(get<PADDING>(layer[l].get_attributes()) == true) { // MERGE TWO PROCESSES (FUTURE UPDATE)
+            if(get<PADDING>(layer[l].get_attributes()) == true) {
                 vector<vector<float>> pad;
                 for(unsigned int i = 0; i < input.size() + 2; i++) {
                     pad.push_back(vector<float>(input.size() + 2, 0.00)); 
@@ -185,8 +184,9 @@ void Encoder::encode() {
                 }
                 pooled.push_back(row);
             }
-            encoded.push_back(pooled);
+            input = pooled;
         }
+        encoded.push_back(input);
     }
     // write encoded input to ./temp
     ofstream f("./temp/encoded");
