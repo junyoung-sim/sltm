@@ -1,8 +1,16 @@
-0 ~ 20000: 2000-01-01 ~ 2020-12-31 (Backtest = True)
-    Last time series date: 2020-03-10
-    Input = 121, Output = 75 >> [25,25],[25,100],[100,75]
-    5078 samples (Training Cost = 0.026254, Backtesting Cost = 0.14932)
 
-20000 ~ 30000: 2000-01-01 ~ 2021-02-01 (Backtest = False)
-    Last time series date: 2020-04-07
-    5099 samples (Training Cost = 0.026938)
+Input: 121
+Output: 75
+Architecture: [[25,25],[25,100],[100,75]]
+
+0 ~ 10000: 2000-01-01 ~ 2020-12-31 (Backtest: 5%)
+===========================================================
+    (Total, Trained, Backtest): (5078, 4825, 253)
+    Training Cost: 0.03236
+    Backtest Cost: 0.11771
+
+10000 ~ 20000: 2000-01-01 ~ 2021-02-04 (Backtest: 0%)
+===========================================================
+    (Total, Trained, Backtest): (5101, 5101, 0)
+    Training Cost: 0.03066
+    Backtest Cost: N/A

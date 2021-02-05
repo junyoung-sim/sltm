@@ -53,7 +53,7 @@ def train():
     # download, process, and save financial time series in ./temp
     dataset = process_timeseries(symbol, date1, date2, True)
     # run the encoder (C coded executable)
-    print("\n\nRunning and reading data returned from encoder...\n")
+    print("\n\nRunning encoder...\n")
     os.system("./encoder " + model)
     print("")
     # read the encoded dataset written in ./temp by the encoder
@@ -81,6 +81,7 @@ def run():
         for val in data:
             f.write(str(val) + " ")
     # run encoder (C coded executable)
+    print("Running encoder...\n")
     os.system("./encoder " + model)
     # read encdoed input
     encoded = []

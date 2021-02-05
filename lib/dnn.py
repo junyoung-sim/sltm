@@ -1,4 +1,5 @@
 
+import tqdm as tqdm
 import os, logging, json, ast
 import tensorflow.compat.v1 as tf
 import matplotlib.pyplot as plt
@@ -75,16 +76,29 @@ class DeepNeuralNetwork:
             if i % (iteration / 10) == 0:
                 cost = self.sess.run(self.cost, feed_dict={self.input: training_input, self.output: training_output})
                 print("ITERATION #{}: COST = {}" .format(i, cost))
-        self.save()
+        self.save() 
+        # save backtest samples
         if test != 0.00:
             print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
             backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
-            print("\nSaving backtest plots into ", self.path + "/backtest/ ...\n")
+            loop = tqdm.tqdm(total=backtest.shape[0], position=0, leave=False)
             for i in range(backtest.shape[0]):
+                loop.set_description("Saving backtested samples... ")
                 fig = plt.figure()
                 plt.plot(backtest[i], color="red")
                 plt.plot(test_output[i], color="green")
                 plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
+                loop.update(1)
+        # save trained samples
+        results = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
+        loop = tqdm.tqdm(total=results.shape[0], position=0, leave=False)
+        for i in range(results.shape[0]):
+            loop.set_description("Saving trained samples... ")
+            fig = plt.figure()
+            plt.plot(results[i], color="red")
+            plt.plot(training_output[i], color="green")
+            plt.savefig(self.path + "/trained-samples/sample" + str(i) + ".png")
+            loop.update(1)
     def run(self, data=[]):
         results = self.sess.run(self.layer[-1], feed_dict={self.input: data})
         return results
