@@ -48,7 +48,6 @@ void Encoder::load() {
         string pool_type;
         unsigned int conv_size, pool_size, stride;
         while(getline(f1, line)) {
-            amount_of_layers++;
             unsigned int val_count = 0;
             for(unsigned int i = 0; i < line.length(); i++) {
                 // sort out the values of the attributes of each layer
@@ -65,7 +64,7 @@ void Encoder::load() {
             }
             // read each layer's kernel
             vector<vector<float>> kernel;
-            f2.open(path + "/kernels/kernel" + to_string(amount_of_layers - 1));
+            f2.open(path + "/kernels/kernel" + to_string(amount_of_layers));
             if(f2.good()) {
                 while(getline(f2, line)) {
                     vector<float> row;
@@ -81,6 +80,7 @@ void Encoder::load() {
                 f2.close();
             }
             layers_read.push_back(Layer(conv_size, stride, padding, pool_type, pool_size, kernel));
+            amount_of_layers++;
         }
         f1.close();
     }
@@ -96,7 +96,7 @@ void Encoder::load() {
     // load input from ./temp
     f1.open("./temp/input");
     if(f1.good()) {
-        while(getline(f1, line)) { // each data sample is flattened to be written in a single line
+        while(getline(f1, line)) { // each data sample is flattened in a single line
             vector<float> row;
             vector<vector<float>> input;
             for(unsigned int i = 0; i < line.length(); i++) {
