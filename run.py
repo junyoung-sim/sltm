@@ -97,8 +97,8 @@ def run():
     print("\nSaved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
     with open(model_path + "/res/" + symbol + "-" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
-    # run trend validation algorithm
-    trend_validation(model_path + "/res/")
+    # plot actual prices on top of trend predictions
+    validate_trend_models(model_path + "/res/")
 
 if __name__ == "__main__":
     init()

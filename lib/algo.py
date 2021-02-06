@@ -13,8 +13,6 @@ def mavg(data=[], window=int()):
     return np.array([sum(data[i:i+window]) / window for i in range(0, len(data) - window)])
 
 def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
-    """ Downloads historical data from Yahoo.
-        arg<start>  must be a specific date  """
     if end != "yyyy-mm-dd":
         download = DataReader(symbol, "yahoo", start, end)
     else:
@@ -27,7 +25,6 @@ def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     return {"prices": data, "dates": dates}
 
 def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_data=False):
-    """ Processes financial time series. ***HARD-CODED PARAMETERS*** """
     input_set, output_set = [], []
     raw = YahooFinance(symbol, start, end)
     stock, dates = raw["prices"], raw["dates"]
@@ -48,7 +45,7 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
                     f.write("\n")
     return {"input": input_set, "output": output_set}
 
-def trend_validation(path=""):
+def validate_trend_models(path=""):
     for f in os.listdir(path):
         if f.endswith(".npy") and f[-14:][:-4] != datetime.today().strftime("%Y-%m-%d"):
             symbol, sample_date = f[:-15], f[-14:][:-4]
@@ -56,8 +53,7 @@ def trend_validation(path=""):
             sample = np.load(path + f)[:len(actual)]
             # plot prediction sample and actual history
             fig = plt.figure()
-            plt.plot(sample[:len(actual)], color="red")
+            plt.plot(sample, color="red")
             plt.plot(actual, color="green")
             plt.savefig(path + symbol + "-" + sample_date + "_validation.png")
-            # some sort of validation method
 
