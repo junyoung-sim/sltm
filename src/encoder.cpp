@@ -110,7 +110,7 @@ void Encoder::load() {
                     val = "";
                 }
             }
-            dataset.push_back(Data(input));
+            dataset.push_back(input);
         }
         f1.close();
     }
@@ -124,9 +124,9 @@ void Encoder::add_layer(unsigned int conv_size, unsigned int stride, bool paddin
 void Encoder::encode() {
     vector<vector<vector<float>>> encoded;
     for(unsigned int d = 0; d < dataset.size(); d++) {
-        vector<vector<float>> input = dataset[d].get_data();
+        vector<vector<float>> input = dataset[d];
         for(unsigned int l = 0; l < layer.size(); l++) {
-            // padding (optional; check layer attributes)
+            // padding
             if(get<PADDING>(layer[l].get_attributes()) == true) {
                 vector<vector<float>> pad;
                 for(unsigned int i = 0; i < input.size() + 2; i++) {

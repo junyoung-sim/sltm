@@ -12,15 +12,6 @@
 #define POOL_TYPE 3
 #define POOL_SIZE 4
 
-class Data
-{
-private:
-   std::vector<std::vector<float>> data;
-public:
-   Data(std::vector<std::vector<float>> source): data(source) {}
-   std::vector<std::vector<float>> get_data() { return data; } 
-};
-
 class Layer
 {
 private:
@@ -52,7 +43,7 @@ class Encoder
 private:
     std::string model, path;
     std::vector<Layer> layer;
-    std::vector<Data> dataset;
+    std::vector<std::vector<std::vector<float>>> dataset;
 public:
     Encoder(std::string name): model(name), path("./models/" + name) {}
     void save();

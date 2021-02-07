@@ -38,8 +38,8 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
     # write dataset into a file (required when training a model)
     if write_data:
         with open("./temp/input", "w+") as f:
-            for i in range(input_set.shape[0]): # very dumb and memory-inefficient (but easy for c code to read)
-                for val in input_set[i].flatten():
+            for i in range(input_set.shape[0]):
+                for val in input_set[i].flatten(): # write each input in a single line (easy for C code to read)
                     f.write(str(val) + " ")
                 if i != input_set.shape[0] - 1:
                     f.write("\n")
