@@ -1,0 +1,19 @@
+
+Symbol: QQQ (NASDAQ)
+Input: 121
+Output: 75
+Architecture: [[25,25],[25,100],[100,75]]
+
+0 ~ 10000: TRANSFERRED LEARNING FROM MODEL "SPY"
+
+10000 ~ 30000: 2000-01-01 ~ 2020-12-31 (Backtest = 0.05)
+===========================================================
+    (Total, Trained, Backtest): (5078, 4825, 253)
+    Training Cost: 0.03215
+    Backtest Cost: 0.12341
+
+30000 ~ 40000: 2000-01-01 ~ 2021-02-04 (Backtest = 0.00)
+===========================================================
+    (Total, Trained, Backtest): (5101, 5101, 0)
+    Training Cost: 0.03317
+    Backtest Cost: N/A
