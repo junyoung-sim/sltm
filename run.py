@@ -6,8 +6,7 @@ read command line arguments in this following order:
 ./run.py mode model symbol date1(start) date2(end) learning_rate iteration backtest
 """
 
-import os
-import sys
+import os, sys
 import matplotlib.pyplot as plt
 from datetime import datetime
 
