@@ -19,8 +19,9 @@ symbol = sys.argv[3]
 model_path = "./models/" + model
 
 def init():
+    print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
     # initialize required root and model file system
-    print("\nInitializing file system...")
+    print("Initializing file system...")
     required = [
         "./temp",
         "./data",
@@ -38,7 +39,7 @@ def init():
     # clear ./temp
     for root, dirs, files in os.walk("./temp"):
         for f in files:
-            os.system("rm -rf ./temp/" + f)
+            os.system("rm -rf ./temp" + f)
     # build encoder
     print("Building encoder...\n")
     os.system("./scripts/build")

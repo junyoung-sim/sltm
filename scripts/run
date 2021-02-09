@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for entry in "./models"/*
+do
+  ./run.py run ${entry:9} ${entry:9}
+done
+
