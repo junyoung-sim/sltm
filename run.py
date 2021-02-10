@@ -39,7 +39,7 @@ def init():
     # clear ./temp
     for root, dirs, files in os.walk("./temp"):
         for f in files:
-            os.system("rm -rf ./temp" + f)
+            os.system("rm -rf ./temp/" + f)
     # build encoder
     print("Building encoder...\n")
     os.system("./scripts/build")
@@ -58,7 +58,7 @@ def train():
     print("")
     # read the encoded dataset written in ./temp by the encoder
     encoded = []
-    with open("./temp/encoded", "r") as f:
+    with open("./temp/encoded", "r") as f: # each encoded sample is written in a single line
         for line in f.readlines():
             encoded.append([float(val) for val in line.split(" ")])
     dataset["input"] = np.array(encoded)
