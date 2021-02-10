@@ -45,3 +45,13 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
                     f.write("\n")
     return {"input": input_set, "output": output_set}
 
+def validate_trend_models(path="", symbol=""):
+    for f in os.listdir(path):
+        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
+            sample_date = f[:-4]
+            actual = normalize(YahooFinance(symbol, sample_date, datetime.today().strftime("%Y-%m-%d"))["prices"])
+            sample = np.load(path + f)[:len(actual)]
+            fig = plt.figure()
+            plt.plot(sample, color="red")
+            plt.plot(actual, color="green")
+            plt.savefig(path + sample_date + "-validation.png")
