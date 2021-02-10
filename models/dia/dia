@@ -1,0 +1,19 @@
+
+Symbol: DIA (Dow Jones)
+Input: 121
+Output: 75
+Architecture: [[25,25],[25,100],[100,75]]
+
+0 ~ 10000: TRANSFERRED FROM "SPY"
+
+10000 ~ 30000: 2000-01-01 ~ 2020-12-31 (Backtest = 5%)
+===========================================================
+    (Total, Trained, Backtest): (5078, 4825, 253)
+    Training Cost: 0.03399
+    Backtest Cost: 0.14004
+
+30000 ~ 40000: 2000-01-01 ~ 2021-02-04 (Backtest = 0%)
+===========================================================
+    (Total, Trained, Backtest): (5101, 5101, 0)
+    Training Cost: 0.03473
+    Backtest Cost: N/A

@@ -199,7 +199,7 @@ void Encoder::encode() {
                     data.push_back(encoded[d][i][j]);
                 }
             }
-            for(unsigned int i = 0; i < data.size(); i++) {
+            for(unsigned int i = 0; i < data.size(); i++) { // each encoded sample will be written in a single line
                 f << data[i];
                 if(i != data.size() - 1) f << " ";
             }
