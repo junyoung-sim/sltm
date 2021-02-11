@@ -91,10 +91,11 @@ def run():
     # load model
     dnn = DeepNeuralNetwork(model_path)
     result = dnn.run(encoded)[0] # get result
+    print("Model Prediction:\n", result, "\n")
     # plot and save result
     plt.plot(result, color="red")
     plt.savefig(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
-    print("\nSaved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png and .npy")
+    print("Saved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png and .npy")
     with open(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
     # validate trend models by plotting actual price changes on prediction plot
