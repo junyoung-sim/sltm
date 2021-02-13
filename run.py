@@ -19,30 +19,42 @@ symbol = sys.argv[3]
 model_path = "./models/" + model
 
 def init():
-    print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
-    # initialize required root and model file system
-    print("Initializing file system...")
-    required = [
-        "./temp",
-        "./data",
-        "./models",
-        model_path,
-        model_path + "/kernels",
-        model_path + "/dnn",
-        model_path + "/backtest",
-        model_path + "/trained-samples",
-        model_path + "/res"
-    ]
-    for d in required:
-        if os.path.exists(d) != True:
-            os.mkdir(d)
-    # clear ./temp
-    for root, dirs, files in os.walk("./temp"):
-        for f in files:
-            os.system("rm -rf ./temp/" + f)
-    # build encoder
-    print("Building encoder...\n")
-    os.system("./scripts/build")
+    okay = False
+    if mode == "train":
+        print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
+        # initialize required root and model file system
+        print("Initializing file system...")
+        required = [
+            "./temp",
+            "./data",
+            "./models",
+            model_path,
+            model_path + "/kernels",
+            model_path + "/dnn",
+            model_path + "/backtest",
+            model_path + "/trained-samples",
+            model_path + "/res"
+        ]
+        for d in required:
+            if os.path.exists(d) != True:
+                os.mkdir(d)
+        okay = True
+    elif mode == "run":
+        if os.path.exists(model_path + "/" + model): # check if identification file exists (i.e., a trained model exists)
+            okay = True
+        else:
+            print("\nRequested model does not exist!\n")
+    else:
+        print("\nInvalid mode given!\n")
+    if okay == True:
+        # clear ./temp
+        for root, dirs, files in os.walk("./temp"):
+            for f in files:
+                os.system("rm -rf ./temp/" + f)
+        # build encoder
+        print("Building encoder...\n")
+        os.system("./scripts/build")
+    return okay
 
 def train():
     date1         = sys.argv[4]
@@ -70,8 +82,11 @@ def train():
         "abs_synapse": 1.0,
         "learning_rate": learning_rate
     }
+    print("Deep neural net hyperparameters = ", hyper, "\n")
     dnn = DeepNeuralNetwork(model_path, hyper)
     dnn.train(dataset["input"], dataset["output"], iteration, backtest) # train neural network and saves trained/backtested plots
+    # identification file to verify the model is trained
+    os.system("touch " + model_path + "/" + model)
 
 def run():
     # download and process lastest input sample
@@ -102,9 +117,9 @@ def run():
     validate_trend_models(model_path + "/res/", symbol)
 
 if __name__ == "__main__":
-    init()
-    if sys.argv[1] == "train":
-        train()
-    elif sys.argv[1] == "run":
-        run()
+    if init():
+        if mode == "train":
+            train()
+        elif mode == "run":
+            run()
 
