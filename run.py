@@ -114,7 +114,7 @@ def run():
     with open(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
     # validate trend models by plotting actual price changes on prediction plot
-    validate_trend_models(model_path + "/res/", symbol)
+    validate_trend_models(model_path, symbol)
 
 if __name__ == "__main__":
     if init():

@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 from pandas_datareader.data import DataReader
 
 def normalize(data=[]):
-    return np.array([(p - min(data)) / (max(data) - min(data)) for p in data])
+    return [(p - min(data)) / (max(data) - min(data)) for p in data]
 
 def mavg(data=[], window=int()):
-    return np.array([sum(data[i:i+window]) / window for i in range(0, len(data) - window)])
+    return [sum(data[i:i+window]) / window for i in range(0, len(data) - window)]
 
 def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
@@ -45,7 +45,8 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
                     f.write("\n")
     return {"input": input_set, "output": output_set}
 
-def validate_trend_models(path="", symbol=""):
+def validate_trend_models(model_path="", symbol=""):
+    path = model_path + "/res/"
     for f in os.listdir(path):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             sample_date = f[:-4]
