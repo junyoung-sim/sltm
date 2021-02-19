@@ -1,0 +1,5 @@
+#!/bin/sh
+
+git add .
+git commit -m "commit from autopilot"
+git push origin master
