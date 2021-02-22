@@ -3,8 +3,8 @@
 import os, sys, time
 from datetime import datetime, timedelta
 
-end_time   = sys.argv[1] # hh:mm:00
-interval   = int(sys.argv[2]) # in minutes
+end_time = sys.argv[1] # hh:mm:00
+interval = int(sys.argv[2]) # in minutes
 
 itr = 0
 current = str(datetime.now().time())[:8]

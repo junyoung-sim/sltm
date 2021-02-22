@@ -12,6 +12,18 @@ def normalize(data=[]):
 def mavg(data=[], window=int()):
     return [sum(data[i:i+window]) / window for i in range(0, len(data) - window)]
 
+def smoothing(line=[]):
+    smooth = []
+    kernel = [-3.0, 12.0, 17.0, 12.0, -3.0] # Savitzky-Golay filter
+    for p in range(len(line) - len(kernel) + 1):
+        k_i, matmul = 0, 0.00
+        for i in range(p, p + len(kernel)):
+            matmul += line[i] * kernel[k_i]
+            k_i += 1
+        k_i = 0
+        smooth.append(matmul/35) # 35 is normalization constant
+    return smooth
+
 def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
         download = DataReader(symbol, "yahoo", start, end)
@@ -46,13 +58,16 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
     return {"input": input_set, "output": output_set}
 
 def validate_trend_models(model_path="", symbol=""):
-    path = model_path + "/res/"
+    path = model_path + "/res/validation/"
     for f in os.listdir(path):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             sample_date = f[:-4]
             actual = normalize(YahooFinance(symbol, sample_date, datetime.today().strftime("%Y-%m-%d"))["prices"])
+            if len(actual) > 10:          # *** HARD-CODED PARAMETER ***
+                actual = mavg(actual, 10) # *** HARD-CODED PARAMETER ***
             sample = np.load(path + f)[:len(actual)]
             fig = plt.figure()
             plt.plot(sample, color="red")
             plt.plot(actual, color="green")
             plt.savefig(path + sample_date + "-validation.png")
+

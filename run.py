@@ -33,7 +33,10 @@ def init():
             model_path + "/dnn",
             model_path + "/backtest",
             model_path + "/trained-samples",
-            model_path + "/res"
+            model_path + "/res",
+            model_path + "/res/npy",
+            model_path + "/res/prediction",
+            model_path + "/res/validation"
         ]
         for d in required:
             if os.path.exists(d) != True:
@@ -105,13 +108,12 @@ def run():
     print("\nEncoded input:\n", encoded)
     # load model
     dnn = DeepNeuralNetwork(model_path)
-    result = dnn.run(encoded)[0] # get result
+    result = smoothing(dnn.run(encoded)[0]) # get result and smooth it w/ Savitzky-Golay filter
     print("Model Prediction:\n", result, "\n")
     # plot and save result
     plt.plot(result, color="red")
-    plt.savefig(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png")
-    print("Saved result in " + model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".png and .npy")
-    with open(model_path + "/res/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
+    plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
+    with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
     # validate trend models by plotting actual price changes on prediction plot
     validate_trend_models(model_path, symbol)
