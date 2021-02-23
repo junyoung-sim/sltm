@@ -12,10 +12,9 @@ from datetime import datetime
 
 from lib import *
 
-mode   = sys.argv[1]
-model  = sys.argv[2]
-symbol = sys.argv[3]
-
+mode       = sys.argv[1]
+model      = sys.argv[2]
+symbol     = sys.argv[3]
 model_path = "./models/" + model
 
 def init():
@@ -109,7 +108,7 @@ def run():
     # load model
     dnn = DeepNeuralNetwork(model_path)
     result = smoothing(dnn.run(encoded)[0]) # get result and smooth it w/ Savitzky-Golay filter
-    print("Model Prediction:\n", result, "\n")
+    print("Model Prediction:\n", np.array(result), "\n")
     # plot and save result
     plt.plot(result, color="red")
     plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
