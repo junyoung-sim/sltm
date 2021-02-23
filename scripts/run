@@ -2,6 +2,6 @@
 
 for entry in "./models"/*
 do
-  ./run.py run ${entry:9} ${entry:9}
+  ./main.py run ${entry:9} ${entry:9}
 done
 
