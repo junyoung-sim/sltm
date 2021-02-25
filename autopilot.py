@@ -16,4 +16,3 @@ while datetime.strptime(current, "%H:%M:%S") - datetime.strptime(end_time, "%H:%
     itr += 1
 
 os.system("clear && ./scripts/run")
-os.system("./scripts/git")

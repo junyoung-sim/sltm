@@ -86,7 +86,7 @@ def train():
     }
     print("Deep neural net hyperparameters = ", hyper, "\n")
     dnn = DeepNeuralNetwork(model_path, hyper)
-    dnn.train(dataset["input"], dataset["output"], iteration, backtest) # train neural network and saves trained/backtested plots
+    dnn.train(dataset, iteration, backtest) # train neural network and saves trained/backtested plots
     # identification file to verify the model is trained
     os.system("touch " + model_path + "/" + model)
 

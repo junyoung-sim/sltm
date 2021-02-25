@@ -64,7 +64,8 @@ class DeepNeuralNetwork:
                 self.hyper = ast.literal_eval(f.read())
         except FileNotFoundError:
             return False
-    def train(self, training_input=[], training_output=[], iteration=int(), test=0.00):
+    def train(self, dataset={"input": [], "output": []}, iteration=int(), test=0.00):
+        training_input, training_output = dataset["input"], dataset["output"]
         if test != 0.00:
             total_samples = training_input.shape[0]
             test_input = training_input[-int(total_samples * test):]
