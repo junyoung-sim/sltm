@@ -2,7 +2,7 @@
 import os
 import numpy as np
 import tqdm as tqdm
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from pandas_datareader.data import DataReader
 
