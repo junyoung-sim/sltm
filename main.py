@@ -18,9 +18,9 @@ symbol     = sys.argv[3]
 model_path = "./models/" + model
 
 def init():
+    print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
     okay = False
     if mode == "train":
-        print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
         # initialize required root and model file system
         print("Initializing file system...")
         required = [
