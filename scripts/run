@@ -1,8 +1,8 @@
 #!/bin/sh
 
-for entry in "./models"/*
+for model in "./models"/*
 do
-  ./main.py run ${entry:9} ${entry:9}
+  ./main.py run ${model:9} ${model:9}
 done
 
 git add .
