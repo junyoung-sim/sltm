@@ -64,8 +64,8 @@ def train():
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
     backtest      = float(sys.argv[8])
-    # download, process, and save financial time series in ./temp
-    dataset = process_timeseries(symbol, date1, date2, True)
+    # download, process, and save financial time series dataset in ./temp
+    dataset = generate_timeseries_dataset(symbol, date1, date2)
     # run the encoder (C coded executable)
     print("\n\nRunning encoder...\n")
     os.system("./encoder " + model)

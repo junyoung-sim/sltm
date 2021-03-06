@@ -5,6 +5,3 @@ do
   ./main.py run ${model:9} ${model:9}
 done
 
-git add .
-git commit -m "automated commit"
-git push origin master

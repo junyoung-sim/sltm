@@ -36,7 +36,7 @@ def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     dates = [line[:10] for line in lines][1:]
     return {"prices": data, "dates": dates}
 
-def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_data=False):
+def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     input_set, output_set = [], []
     raw = YahooFinance(symbol, start, end)
     stock, dates = raw["prices"], raw["dates"]
@@ -46,15 +46,13 @@ def process_timeseries(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd", write_da
         input_set.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER *** >> RESHAPE INPUT TO 11x11 (Raster)
         output_set.append(normalize(mavg(stock[i+121:i+206], 10)))  # *** HARD-CODED PARAMETER ***
         loop.update(1)
-    input_set, output_set = np.array(input_set), np.array(output_set)
-    # write dataset into a file (required when training a model)
-    if write_data:
-        with open("./temp/input", "w+") as f:
-            for i in range(input_set.shape[0]):
-                for val in input_set[i]: # write each input in a single line (easy for C code to read)
-                    f.write(str(val) + " ")
-                if i != input_set.shape[0] - 1:
-                    f.write("\n")
+    input_set, output_set = np.array(input_set), np.array(output_set) 
+    with open("./temp/input", "w+") as f:
+        for i in range(input_set.shape[0]):
+            for val in input_set[i]: # write each input in a single line (easy for C code to read)
+                f.write(str(val) + " ")
+            if i != input_set.shape[0] - 1:
+                f.write("\n")
     return {"input": input_set, "output": output_set}
 
 def validate_trend_models(model_path="", symbol=""):

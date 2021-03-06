@@ -14,11 +14,11 @@ void Encoder::save() {
         for(unsigned int l = 0; l < layer.size(); l++) {
             vector<vector<float>> kernel = layer[l].get_kernel();
             // save the attributes of each layer 
-            f1 << get<CONV_SIZE>(layer[l].get_attributes()) << " ";
-            f1 << get<STRIDE>(layer[l].get_attributes()) << " ";
-            f1 << get<PADDING>(layer[l].get_attributes()) << " ";
-            f1 << get<POOL_TYPE>(layer[l].get_attributes()) << " ";
-            f1 << get<POOL_SIZE>(layer[l].get_attributes()) << " ";
+            f1 << get<CONV_SIZE>(layer[l].get_parameters()) << " ";
+            f1 << get<STRIDE>(layer[l].get_parameters()) << " ";
+            f1 << get<PADDING>(layer[l].get_parameters()) << " ";
+            f1 << get<POOL_TYPE>(layer[l].get_parameters()) << " ";
+            f1 << get<POOL_SIZE>(layer[l].get_parameters()) << " ";
             if(l != layer.size() - 1) f1 << "\n";
             // save each layer's kernel
             ofstream f2(path + "/kernels/kernel" + to_string(l));
@@ -38,7 +38,6 @@ void Encoder::save() {
 
 void Encoder::load() {
     string line, val;
-    unsigned int amount_of_layers = 0;
     vector<Layer> layers_read;
 
     ifstream f1, f2;
@@ -64,7 +63,7 @@ void Encoder::load() {
             }
             // read each layer's kernel
             vector<vector<float>> kernel;
-            f2.open(path + "/kernels/kernel" + to_string(amount_of_layers));
+            f2.open(path + "/kernels/kernel" + to_string(layers_read.size()));
             if(f2.good()) {
                 while(getline(f2, line)) {
                     vector<float> row;
@@ -80,7 +79,6 @@ void Encoder::load() {
                 f2.close();
             }
             layers_read.push_back(Layer(conv_size, stride, padding, pool_type, pool_size, kernel));
-            amount_of_layers++;
         }
         f1.close();
     }
@@ -91,7 +89,7 @@ void Encoder::load() {
     cout << "     conv_size  stride  padding  pool_type  pool_size" << endl;
     cout << "-------------------------------------------------------" << endl;
     for(unsigned int l = 0; l < layer.size(); l++) {
-        cout << "#" << l << ":      " << get<CONV_SIZE>(layer[l].get_attributes()) << "        " << get<STRIDE>(layer[l].get_attributes()) << "        " << get<PADDING>(layer[l].get_attributes()) << "        " << get<POOL_TYPE>(layer[l].get_attributes()) << "         " << get<POOL_SIZE>(layer[l].get_attributes()) << " " << endl;
+        cout << "#" << l << ":      " << get<CONV_SIZE>(layer[l].get_parameters()) << "        " << get<STRIDE>(layer[l].get_parameters()) << "        " << get<PADDING>(layer[l].get_parameters()) << "        " << get<POOL_TYPE>(layer[l].get_parameters()) << "         " << get<POOL_SIZE>(layer[l].get_parameters()) << " " << endl;
     }
     // load input from ./temp
     f1.open("./temp/input");
@@ -103,7 +101,7 @@ void Encoder::load() {
                 if(line[i] != ' ') val += line[i];
                 else {
                     row.push_back(stof(val));
-                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; SET ACCORDINGLY WITH PARAMETER IN "./lib/modules.py:30" ***
+                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; RASTER SCANNING ORDER***
                          input.push_back(row);
                          row.clear();
                     }
@@ -127,7 +125,7 @@ void Encoder::encode() {
         vector<vector<float>> input = dataset[d];
         for(unsigned int l = 0; l < layer.size(); l++) {
             // padding
-            if(get<PADDING>(layer[l].get_attributes()) == true) {
+            if(get<PADDING>(layer[l].get_parameters()) == true) {
                 vector<vector<float>> pad;
                 for(unsigned int i = 0; i < input.size() + 2; i++) {
                     pad.push_back(vector<float>(input.size() + 2, 0.00)); 
@@ -142,8 +140,8 @@ void Encoder::encode() {
             // convolution
             vector<vector<float>> convolved;
             vector<vector<float>> kernel = layer[l].get_kernel();
-            unsigned conv_size = get<CONV_SIZE>(layer[l].get_attributes());
-            unsigned stride = get<STRIDE>(layer[l].get_attributes());
+            unsigned conv_size = get<CONV_SIZE>(layer[l].get_parameters());
+            unsigned stride = get<STRIDE>(layer[l].get_parameters());
             for(unsigned int r = 0; r <= input.size() - conv_size; r += stride) {
                 vector<float> row;
                 for(unsigned int c = 0; c <= input[r].size() - conv_size; c += stride) {
@@ -165,8 +163,8 @@ void Encoder::encode() {
             }
             // pooling
             vector<vector<float>> pooled;
-            string pool_type = get<POOL_TYPE>(layer[l].get_attributes());
-            unsigned int pool_size = get<POOL_SIZE>(layer[l].get_attributes());
+            string pool_type = get<POOL_TYPE>(layer[l].get_parameters());
+            unsigned int pool_size = get<POOL_SIZE>(layer[l].get_parameters());
             for(unsigned int r = 0; r <= convolved.size() - pool_size; r += pool_size) {
                 vector<float> row;
                 for(unsigned int c = 0; c <= convolved[r].size() - pool_size; c += pool_size) {
