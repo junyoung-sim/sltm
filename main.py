@@ -84,7 +84,7 @@ def train():
         "abs_synapse": 1.0,
         "learning_rate": learning_rate
     }
-    print("Deep neural net hyperparameters = ", hyper, "\n")
+    print("DNN hyperparameters = ", hyper, "\n")
     dnn = DeepNeuralNetwork(model_path, hyper)
     dnn.train(dataset, iteration, backtest) # train neural network and saves trained/backtested plots
     # identification file to verify the model is trained
