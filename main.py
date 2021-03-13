@@ -34,8 +34,7 @@ def init():
             model_path + "/trained-samples",
             model_path + "/res",
             model_path + "/res/npy",
-            model_path + "/res/prediction",
-            model_path + "/res/validation"
+            model_path + "/res/prediction"
         ]
         for d in required:
             if os.path.exists(d) != True:
@@ -114,8 +113,6 @@ def run():
     plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
     with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
-    # validate trend models by plotting actual price changes on prediction plot
-    validate_trend_models(model_path, symbol)
 
 if __name__ == "__main__":
     if init():
