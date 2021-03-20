@@ -43,7 +43,7 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False) # *** HARD-CODED PARAMETER ***
     for i in range(len(stock)-206):                                 # *** HARD-CODED PARAMETER ***
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
-        input_set.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER *** >> RESHAPE INPUT TO 11x11 (Raster)
+        input_set.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER ***
         output_set.append(normalize(mavg(stock[i+121:i+206], 10)))  # *** HARD-CODED PARAMETER ***
         loop.update(1)
     input_set, output_set = np.array(input_set), np.array(output_set) 
