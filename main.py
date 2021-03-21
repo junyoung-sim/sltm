@@ -41,7 +41,7 @@ def init():
                 os.mkdir(d)
         okay = True
     elif mode == "run":
-        if os.path.exists(model_path + "/" + model): # check if identification file exists (i.e., a trained model exists)
+        if os.path.exists(model_path + "/" + model): # check if a trained model exists
             okay = True
         else:
             print("\nRequested model does not exist!\n")
