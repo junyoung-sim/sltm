@@ -13,7 +13,7 @@ void Encoder::save() {
     if(f1.is_open()) {
         for(unsigned int l = 0; l < layer.size(); l++) {
             vector<vector<float>> kernel = layer[l].get_kernel();
-            // save the attributes of each layer 
+            // save the parameters of each layer into each line
             f1 << get<CONV_SIZE>(layer[l].get_parameters()) << " ";
             f1 << get<STRIDE>(layer[l].get_parameters()) << " ";
             f1 << get<PADDING>(layer[l].get_parameters()) << " ";
@@ -83,8 +83,8 @@ void Encoder::load() {
         f1.close();
     }
     if(!layers_read.empty()) layer = layers_read;
-    // display layer attributes
-    cout << "Encoder Attributes" << endl;
+    // display layer parameteres
+    cout << "Encoder Parameters" << endl;
     cout << "-------------------------------------------------------" << endl;
     cout << "     conv_size  stride  padding  pool_type  pool_size" << endl;
     cout << "-------------------------------------------------------" << endl;
@@ -101,7 +101,7 @@ void Encoder::load() {
                 if(line[i] != ' ') val += line[i];
                 else {
                     row.push_back(stof(val));
-                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; RASTER SCANNING ORDER***
+                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; RESHAPING INPUT USING RASTER SCANNING ORDER ***
                          input.push_back(row);
                          row.clear();
                     }

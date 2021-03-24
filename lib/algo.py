@@ -55,3 +55,18 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": input_set, "output": output_set}
 
+def trend_validation(model_path="", symbol=""):
+    path = model_path + "/res/npy/"
+    raw = YahooFinance(symbol, "2021-01-01")
+    stock = mavg(raw["prices"], 10)
+    dates = raw["dates"][10:]
+    print("\n| Trend Validation Results | ------ Date ------ Direction Accuracy ------ MSE ------")
+    # validate each trend model saved in model
+    for f in os.listdir(path):
+        if f.endswith(".npy"):
+            date = f[:-4]
+            actual = stock[dates.index(date):]
+            prediction = np.load(path + f)
+            # calculate directional accuracy
+            # calculate MSE
+
