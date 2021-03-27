@@ -60,13 +60,23 @@ def trend_validation(model_path="", symbol=""):
     raw = YahooFinance(symbol, "2021-01-01")
     stock = mavg(raw["prices"], 10)
     dates = raw["dates"][10:]
-    print("\n| Trend Validation Results | ------ Date ------ Direction Accuracy ------ MSE ------")
+    print("\n|[ Trend Validation Results ]|")
+    print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")
     # validate each trend model saved in model
     for f in os.listdir(path):
         if f.endswith(".npy"):
             date = f[:-4]
-            actual = stock[dates.index(date):]
-            prediction = np.load(path + f)
-            # calculate directional accuracy
-            # calculate MSE
-
+            if date != datetime.today().strftime("%Y-%m-%d") and date != "2021-03-26":
+                actual = normalize(stock[dates.index(date):])
+                prediction = np.load(path + f)[:len(actual)]
+                # calculate directional accuracy
+                actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
+                prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
+                accuracy = sum([1 for i in range(len(actual_derivative)) if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]]) * 100 / len(actual_derivative)
+                # calculate MSE
+                mse = sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
+                # show validation result
+                print("          {}                   {}%          {}" .format(date, int(accuracy), mse))
+                plt.plot(actual, color="green")
+                plt.plot(prediction, color="red")
+                plt.show()
