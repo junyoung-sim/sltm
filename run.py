@@ -48,7 +48,7 @@ def init():
             print("\nRequested model does not exist!\n")
     else:
         print("\nInvalid mode given!\n")
-    if okay == True:
+    if okay:
         # clear ./temp
         for root, dirs, files in os.walk("./temp"):
             for f in files:
