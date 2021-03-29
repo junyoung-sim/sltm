@@ -29,37 +29,36 @@ def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         download = DataReader(symbol, "yahoo", start, end)
     else:
         download = DataReader(symbol, "yahoo", start)
+    data = list(download["Adj Close"]) # adjusted close price
     download.to_csv("./data/" + symbol + ".csv")
     with open("./data/" + symbol + ".csv", "r") as f:
-        lines = f.readlines()
-    data = list(download["Adj Close"]) # adjusted close price
-    dates = [line[:10] for line in lines][1:]
+         dates = [line[:10] for line in f.readlines()] # dates of each price
+         dates.pop(0) # delete first line because it is not a date, it is the header
     return {"prices": data, "dates": dates}
 
 def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
-    input_set, output_set = [], []
+    training_input, training_output = [], []
     raw = YahooFinance(symbol, start, end)
     stock, dates = raw["prices"], raw["dates"]
     loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False) # *** HARD-CODED PARAMETER ***
     for i in range(len(stock)-206):                                 # *** HARD-CODED PARAMETER ***
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
-        input_set.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER ***
-        output_set.append(normalize(mavg(stock[i+121:i+206], 10)))  # *** HARD-CODED PARAMETER ***
+        training_input.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER ***
+        training_output.append(normalize(mavg(stock[i+121:i+206], 10)))  # *** HARD-CODED PARAMETER ***
         loop.update(1)
-    input_set, output_set = np.array(input_set), np.array(output_set) 
+    training_input, training_output = np.array(training_input), np.array(training_output)
     with open("./temp/input", "w+") as f:
-        for i in range(input_set.shape[0]):
-            for val in input_set[i]: # write each input in a single line (easy for C code to read)
+        for i in range(training_input.shape[0]):
+            for val in training_input[i]: # write each input in a single line (easy for C code to read)
                 f.write(str(val) + " ")
-            if i != input_set.shape[0] - 1:
+            if i != training_input.shape[0] - 1:
                 f.write("\n")
-    return {"input": input_set, "output": output_set}
+    return {"input": training_input, "output": training_output}
 
 def trend_validation(model_path="", symbol=""):
     path = model_path + "/res/npy/"
     raw = YahooFinance(symbol, "2021-01-01")
-    stock = mavg(raw["prices"], 10)
-    dates = raw["dates"][10:]
+    stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
     print("\n|[ Trend Validation Results ]|")
     print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")
     # validate each trend model saved in model

@@ -38,7 +38,7 @@ def init():
             model_path + "/res/prediction"
         ]
         for d in required:
-            if os.path.exists(d) != True:
+            if not os.path.exists(d):
                 os.mkdir(d)
         okay = True
     elif mode == "run":
@@ -88,7 +88,7 @@ def train():
     dnn = DeepNeuralNetwork(model_path, hyper)
     dnn.train(dataset, iteration, backtest) # train neural network and saves trained/backtested plots
     # if the model is initially trained
-    if os.path.exists(model_path + "/" + model) == False:
+    if not os.path.exists(model_path + "/" + model):
         os.system("touch " + model_path + "/" + model) # create identification file
 
 def run():
@@ -121,6 +121,6 @@ if __name__ == "__main__":
     if init():
         if mode == "train":
             train()
-        elif mode == "run":
+        else:
             run()
 

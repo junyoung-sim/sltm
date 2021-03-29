@@ -39,7 +39,7 @@ void Encoder::save() {
 void Encoder::load() {
     string line, val;
     vector<Layer> layers_read;
-
+    // load encoding layer parameters and kernel
     ifstream f1, f2;
     f1.open(path + "/layers");
     if(f1.good()) {
@@ -125,7 +125,7 @@ void Encoder::encode() {
         vector<vector<float>> input = dataset[d];
         for(unsigned int l = 0; l < layer.size(); l++) {
             // padding
-            if(get<PADDING>(layer[l].get_parameters()) == true) {
+            if(get<PADDING>(layer[l].get_parameters())) {
                 vector<vector<float>> pad;
                 for(unsigned int i = 0; i < input.size() + 2; i++) {
                     pad.push_back(vector<float>(input.size() + 2, 0.00)); 
@@ -140,8 +140,8 @@ void Encoder::encode() {
             // convolution
             vector<vector<float>> convolved;
             vector<vector<float>> kernel = layer[l].get_kernel();
-            unsigned conv_size = get<CONV_SIZE>(layer[l].get_parameters());
-            unsigned stride = get<STRIDE>(layer[l].get_parameters());
+            unsigned int conv_size = get<CONV_SIZE>(layer[l].get_parameters());
+            unsigned int stride = get<STRIDE>(layer[l].get_parameters());
             for(unsigned int r = 0; r <= input.size() - conv_size; r += stride) {
                 vector<float> row;
                 for(unsigned int c = 0; c <= input[r].size() - conv_size; c += stride) {
