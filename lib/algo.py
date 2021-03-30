@@ -65,7 +65,7 @@ def trend_validation(model_path="", symbol=""):
     for f in os.listdir(path):
         if f.endswith(".npy"):
             date = f[:-4]
-            if date != datetime.today().strftime("%Y-%m-%d") and date != "2021-03-26":
+            if date != datetime.today().strftime("%Y-%m-%d"):
                 actual = normalize(stock[dates.index(date):])
                 prediction = np.load(path + f)[:len(actual)]
                 # calculate directional accuracy
@@ -76,6 +76,7 @@ def trend_validation(model_path="", symbol=""):
                 mse = sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
                 # show validation result
                 print("          {}                   {}%          {}" .format(date, int(accuracy), mse))
+                fig = plt.figure()
                 plt.plot(actual, color="green")
                 plt.plot(prediction, color="red")
                 plt.show()

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for model in "./models"/*
+do
+  rm -rf ${model}/res/npy/*.npy
+  rm -rf ${model}/res/prediction/*.png
+done
