@@ -49,7 +49,7 @@ void Encoder::load() {
         while(getline(f1, line)) {
             unsigned int val_count = 0;
             for(unsigned int i = 0; i < line.length(); i++) {
-                // sort out the values of the attributes of each layer
+                // read the parameter values of the layer that is currently being read
                 if(line[i] != ' ') val += line[i];
                 else {
                     if(val_count == CONV_SIZE) conv_size = stoul(val);
