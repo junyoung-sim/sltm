@@ -57,7 +57,7 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
 
 def trend_validation(model_path="", symbol=""):
     path = model_path + "/res/npy/"
-    raw = YahooFinance(symbol, "2021-01-01")
+    raw = YahooFinance(symbol, "2021-01-01", datetime.today().strftime("%Y-%m-%d"))
     stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
     print("\n|[ Trend Validation Results ]|")
     print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")

@@ -14,9 +14,8 @@ class DeepNeuralNetwork:
     def __init__(self, path="", hyper={}):
         """ hyper = {"architecture", "activation", "abs_synapse", "learning_rate"} """
         self.path = path
-        if self.load() == False: # if model does not exist
-            # if the model exists, self.load() automatically loads hyperparameters that are saved
-            self.hyper = hyper # load given hyperparameters
+        if not self.load(): # if the model exists, self.load() automatically loads hyperparameters that are saved
+            self.hyper = hyper # if the model doesn't exist, load given hyperparameters
         # load hyperparameters
         architecture  = self.hyper["architecture"]
         activation    = self.hyper["activation"]  # relu is highly recommended
@@ -62,6 +61,7 @@ class DeepNeuralNetwork:
         try:
             with open(self.path + "/dnn/hyperparameters", "r") as f:
                 self.hyper = ast.literal_eval(f.read())
+                return True
         except FileNotFoundError:
             return False
     def train(self, dataset={"input": [], "output": []}, iteration=int(), test=0.00):
