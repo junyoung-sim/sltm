@@ -29,27 +29,27 @@ def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         download = DataReader(symbol, "yahoo", start, end)
     else:
         download = DataReader(symbol, "yahoo", start)
-    data = list(download["Adj Close"]) # adjusted close price
     download.to_csv("./data/" + symbol + ".csv")
+    data = list(download["Adj Close"]) # adjusted close price
     with open("./data/" + symbol + ".csv", "r") as f:
-         dates = [line[:10] for line in f.readlines()] # dates of each price
-         dates.pop(0) # delete first line because it is not a date, it is the header
+         dates = [line[:10] for line in f.readlines()] # get date of each price
+         dates.pop(0)
     return {"prices": data, "dates": dates}
 
 def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     training_input, training_output = [], []
     raw = YahooFinance(symbol, start, end)
     stock, dates = raw["prices"], raw["dates"]
-    loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False) # *** HARD-CODED PARAMETER ***
-    for i in range(len(stock)-206):                                 # *** HARD-CODED PARAMETER ***
+    loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
+    for i in range(len(stock)-206):
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
-        training_input.append(normalize(mavg(stock[i:i+171], 50)))       # *** HARD-CODED PARAMETER ***
-        training_output.append(normalize(mavg(stock[i+121:i+206], 10)))  # *** HARD-CODED PARAMETER ***
+        training_input.append(normalize(mavg(stock[i:i+171], 50))) # D-121 MAVG 50 input
+        training_output.append(normalize(mavg(stock[i+121:i+206], 10))) # D+75 MAVG 10 output
         loop.update(1)
     training_input, training_output = np.array(training_input), np.array(training_output)
     with open("./temp/input", "w+") as f:
-        for i in range(training_input.shape[0]):
-            for val in training_input[i]: # write each input in a single line (easy for C code to read)
+        for i in range(training_input.shape[0]): # write each input into each line
+            for val in training_input[i]:
                 f.write(str(val) + " ")
             if i != training_input.shape[0] - 1:
                 f.write("\n")
@@ -57,26 +57,23 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
 
 def trend_validation(model_path="", symbol=""):
     path = model_path + "/res/npy/"
-    raw = YahooFinance(symbol, "2021-01-01", datetime.today().strftime("%Y-%m-%d"))
+    raw = YahooFinance(symbol, "2021-01-01")
     stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
     print("\n|[ Trend Validation Results ]|")
     print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")
-    # validate each trend model saved in model
     for f in os.listdir(path):
         if f.endswith(".npy"):
             date = f[:-4]
             if date != datetime.today().strftime("%Y-%m-%d"):
                 actual = normalize(stock[dates.index(date):])
                 prediction = np.load(path + f)[:len(actual)]
-                # calculate directional accuracy
                 actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
                 prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
-                accuracy = sum([1 for i in range(len(actual_derivative)) if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]]) * 100 / len(actual_derivative)
-                # calculate MSE
+                accuracy = int()
+                for i in range(len(actual_derivative)):
+                    if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
+                        accuracy += 1
+                accuracy *= int(100 / len(actual_derivative))
                 mse = sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
-                # show validation result
-                print("          {}                   {}%          {}" .format(date, int(accuracy), mse))
-                fig = plt.figure()
-                plt.plot(actual, color="green")
-                plt.plot(prediction, color="red")
-                plt.show()
+                print("          {}                   {}%               {}" .format(date, accuracy, mse))
+

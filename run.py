@@ -16,13 +16,14 @@ from lib import *
 mode       = sys.argv[1]
 model      = sys.argv[2]
 symbol     = sys.argv[3]
-model_path = "./models/" + model
+
+model_path     = "./models/" + model
+evaluator_path = "./eval/" + model
 
 def init():
     print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
     okay = False
     if mode == "train":
-        # initialize required root and model file system
         print("Initializing file system...")
         required = [
             "./temp",
@@ -35,25 +36,25 @@ def init():
             model_path + "/trained-samples",
             model_path + "/res",
             model_path + "/res/npy",
-            model_path + "/res/prediction"
+            model_path + "/res/prediction",
+            evaluator_path,
+            evaluator_path + "/dnn"
         ]
         for d in required:
-            if not os.path.exists(d):
+            if not os.path.exists(d): # check if required directory exists; if not, create it
                 os.mkdir(d)
         okay = True
     elif mode == "run":
-        if os.path.exists(model_path + "/" + model): # check if a trained model exists
+        if os.path.exists(model_path + "/" + model): # checking if trained model exists
             okay = True
         else:
             print("\nRequested model does not exist!\n")
     else:
         print("\nInvalid mode given!\n")
     if okay:
-        # clear ./temp
         for root, dirs, files in os.walk("./temp"):
             for f in files:
                 os.system("rm -rf ./temp/" + f)
-        # build encoder
         print("Building encoder...\n")
         os.system("./scripts/build")
     return okay
@@ -64,57 +65,85 @@ def train():
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
     backtest      = float(sys.argv[8])
-    # download, process, and save financial time series dataset in ./temp
-    dataset = generate_timeseries_dataset(symbol, date1, date2)
-    # run the encoder (C coded executable)
+    # sample and save training dataset from historical data
+    dataset = generate_timeseries_dataset(symbol, date1, date2) # ./lib/algo.py 39:56
+    # run encoder on training inputs (C coded executable)
     print("\n\nRunning encoder...\n")
     os.system("./encoder " + model)
     print("")
-    # read the encoded dataset written in ./temp by the encoder
+    # read encoded inputs
     encoded = []
-    with open("./temp/encoded", "r") as f: # each encoded sample is written in a single line
+    with open("./temp/encoded", "r") as f:
         for line in f.readlines():
             encoded.append([float(val) for val in line.split(" ")])
     dataset["input"] = np.array(encoded)
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
-    # train deep neural network
+    # train prediction model
     hyper = {
-        "architecture":[[25,25],[25,100],[100,75]], # *** HARD-CODED PARAMETER ***
+        "architecture":[[25,25],[25,100],[100,75]],
         "activation": "relu",
         "abs_synapse": 1.0,
         "learning_rate": learning_rate
     }
-    print("DNN hyperparameters = ", hyper, "\n")
+    print("Prediction DNN = ", hyper, "\n")
     dnn = DeepNeuralNetwork(model_path, hyper)
-    dnn.train(dataset, iteration, backtest) # train neural network and saves trained/backtested plots
-    # if the model is initially trained
+    dnn.train(dataset, iteration, backtest)
     if not os.path.exists(model_path + "/" + model):
-        os.system("touch " + model_path + "/" + model) # create identification file
+        os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained
+    # train confidence evaluator model (only when training the prediction model involved backtesting)
+    if backtest != 0.00:
+        print("\nTraining confidence evaluator...\n")
+        dataset = {"input": [], "output": []}
+        try:
+            # read existing database of prediction model's backtest inputs and costs
+            dataset["input"] = np.load(evaluator_path + "/inputs.npy")
+            dataset["output"] = np.load(evaluator_path + "/costs.npy")
+        except Exception:
+            pass
+        # add backtest inputs and costs saved by prediction model to confidence evaluator database
+        for data in np.load(model_path + "/backtest/backtest_input.npy"):
+            dataset["input"].append(data)
+        for cost in np.load(model_path + "/backtest/backtest_costs.npy"):
+            dataset["output"].append(cost)
+        hyper = {
+            "architecture":[[25,25],[25,50],[50,1]], # *** HARD-CODED PARAMETER ***
+            "activation": "sigmoid",
+            "abs_synapse": 1.0,
+            "learning_rate": 0.01
+        }
+        evaluator = DeepNeuralNetwork(evaluator_path, hyper)
+        evaluator.train(dataset, 1000, 0.0)
+        with open(evaluator_path + "/inputs.npy", "wb") as f1, open(evaluator_path + "/costs.npy", "wb") as f2:
+            np.save(f1, dataset["input"])
+            np.save(f2, dataset["output"])
 
 def run():
-    # download and process lastest input sample
-    data = normalize(mavg(YahooFinance(symbol, "2019-01-01", "yyyy-mm-dd")["prices"][-171:], 50)) # *** HARD-CODED PARAMETER ***
-    # write processed input to ./temp
-    with open("./temp/input", "w+") as f:
+    data = normalize(mavg(YahooFinance(symbol, "2019-01-01", "yyyy-mm-dd")["prices"][-171:], 50)) # process recent D-121 MAVG 50 input
+    with open("./temp/input", "w+") as f: # save input
         for val in data:
             f.write(str(val) + " ")
-    # run encoder (C coded executable)
+    # run encoder on input
     print("Running encoder...\n")
     os.system("./encoder " + model)
-    # read encdoed input
+    # read encoded input
     encoded = []
     with open("./temp/encoded", "r") as f:
         encoded = np.array([[float(val) for val in f.readline().split(" ")]])
     print("\nEncoded input:\n", encoded)
-    # load model
-    dnn = DeepNeuralNetwork(model_path)
-    result = smoothing(dnn.run(encoded)[0]) # get result and smooth it w/ Savitzky-Golay filter
+    # run prediction model
+    predictor = DeepNeuralNetwork(model_path)
+    result = smoothing(predictor.run(encoded)[0])
     print("Model Prediction:\n", np.array(result), "\n")
-    # plot and save result
+    # save prediction results
     plt.plot(result, color="red")
     plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
     with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
+    # run confidence evaluator
+    evaluator = DeepNeuralNetwork(evaluator_path)
+    confidence = evaluator.run(encoded)[0]
+    print("Confidence = {}\n" .format(confidence))
+    # validate trend models with realtime trend
     trend_validation(model_path, symbol)
 
 if __name__ == "__main__":
@@ -123,4 +152,3 @@ if __name__ == "__main__":
             train()
         else:
             run()
-

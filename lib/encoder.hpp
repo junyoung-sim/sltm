@@ -20,10 +20,9 @@ private:
 public:
     Layer(unsigned int conv_size, unsigned int stride, bool padding, std::string pool_type, unsigned int pool_size, std::vector<std::vector<float>> kernel_source): kernel(kernel_source) {
         srand(time(NULL));
-        // layer configurations
         parameters = make_tuple(conv_size, stride, padding, pool_type, pool_size);
         if(kernel.empty()) {
-            // if no kernel is given, then generate a random convolution kernel
+            // if no kernel is given then generate a random convolution kernel
             for(unsigned int i = 0; i < conv_size; i++) {
                 std::vector<float> row;
                 for(unsigned int j = 0; j < conv_size; j++) {

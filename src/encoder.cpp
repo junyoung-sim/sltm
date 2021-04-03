@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -12,17 +13,18 @@ void Encoder::save() {
     ofstream f1(path + "/layers");
     if(f1.is_open()) {
         for(unsigned int l = 0; l < layer.size(); l++) {
-            vector<vector<float>> kernel = layer[l].get_kernel();
-            // save the parameters of each layer into each line
+            // save parameters of each layer into each line
             f1 << get<CONV_SIZE>(layer[l].get_parameters()) << " ";
             f1 << get<STRIDE>(layer[l].get_parameters()) << " ";
             f1 << get<PADDING>(layer[l].get_parameters()) << " ";
             f1 << get<POOL_TYPE>(layer[l].get_parameters()) << " ";
             f1 << get<POOL_SIZE>(layer[l].get_parameters()) << " ";
             if(l != layer.size() - 1) f1 << "\n";
-            // save each layer's kernel
+            // save kernel of each layer
+            vector<vector<float>> kernel = layer[l].get_kernel();
             ofstream f2(path + "/kernels/kernel" + to_string(l));
             if(f2.is_open()) {
+                // save each row of the kernel into each line
                 for(unsigned int i = 0; i < kernel.size(); i++) {
                     for(unsigned int j = 0; j < kernel[i].size(); j++) {
                         f2 << kernel[i][j] << " ";
@@ -39,7 +41,7 @@ void Encoder::save() {
 void Encoder::load() {
     string line, val;
     vector<Layer> layers_read;
-    // load encoding layer parameters and kernel
+
     ifstream f1, f2;
     f1.open(path + "/layers");
     if(f1.good()) {
@@ -47,9 +49,9 @@ void Encoder::load() {
         string pool_type;
         unsigned int conv_size, pool_size, stride;
         while(getline(f1, line)) {
+            // read parameter values of each layer
             unsigned int val_count = 0;
             for(unsigned int i = 0; i < line.length(); i++) {
-                // read the parameter values of the layer that is currently being read
                 if(line[i] != ' ') val += line[i];
                 else {
                     if(val_count == CONV_SIZE) conv_size = stoul(val);
@@ -61,7 +63,7 @@ void Encoder::load() {
                     val = "";
                 }
             }
-            // read each layer's kernel
+            // read kernel of each layer
             vector<vector<float>> kernel;
             f2.open(path + "/kernels/kernel" + to_string(layers_read.size()));
             if(f2.good()) {
@@ -78,12 +80,13 @@ void Encoder::load() {
                 }
                 f2.close();
             }
+            // construct layer
             layers_read.push_back(Layer(conv_size, stride, padding, pool_type, pool_size, kernel));
         }
         f1.close();
     }
-    if(!layers_read.empty()) layer = layers_read;
-    // display layer parameteres
+    if(!layers_read.empty()) layer = layers_read; // initialize encoding layers with the layers that are read
+    // display encoder parameters
     cout << "Encoder Parameters" << endl;
     cout << "-------------------------------------------------------" << endl;
     cout << "     conv_size  stride  padding  pool_type  pool_size" << endl;
@@ -91,17 +94,17 @@ void Encoder::load() {
     for(unsigned int l = 0; l < layer.size(); l++) {
         cout << "#" << l << ":      " << get<CONV_SIZE>(layer[l].get_parameters()) << "        " << get<STRIDE>(layer[l].get_parameters()) << "        " << get<PADDING>(layer[l].get_parameters()) << "        " << get<POOL_TYPE>(layer[l].get_parameters()) << "         " << get<POOL_SIZE>(layer[l].get_parameters()) << " " << endl;
     }
-    // load input from ./temp
+    // read input
     f1.open("./temp/input");
     if(f1.good()) {
-        while(getline(f1, line)) { // each data sample is flattened in a single line
+        while(getline(f1, line)) { // read each input written in each line
             vector<float> row;
             vector<vector<float>> input;
             for(unsigned int i = 0; i < line.length(); i++) {
                 if(line[i] != ' ') val += line[i];
                 else {
                     row.push_back(stof(val));
-                    if(row.size() == 11) { // *** HARD-CODED-PARAMETER; RESHAPING INPUT USING RASTER SCANNING ORDER ***
+                    if(row.size() == 11) { // reshape input into 2D image (raster scanning order)
                          input.push_back(row);
                          row.clear();
                     }
@@ -156,12 +159,12 @@ void Encoder::encode() {
                         k_col = 0;
                     }
                     k_row = 0;
-                    row.push_back(matmul < 0.00 ? 0.00 : matmul); // ReLU thresholding
+                    row.push_back(matmul < 0.00 ? 0.00 : matmul); // threshold matrix multiplication with ReLU
                     matmul = 0.00;
                 }
                 convolved.push_back(row);
             }
-            // pooling
+            // pooling (max or avg)
             vector<vector<float>> pooled;
             string pool_type = get<POOL_TYPE>(layer[l].get_parameters());
             unsigned int pool_size = get<POOL_SIZE>(layer[l].get_parameters());
@@ -186,18 +189,18 @@ void Encoder::encode() {
         }
         encoded.push_back(input);
     }
-    // write encoded input to ./temp
+    // save encoded inputs
     ofstream f("./temp/encoded");
     if(f.is_open()) {
         for(unsigned int d = 0; d < encoded.size(); d++) {
             vector<float> data;
-            // flatten encoded data
+            // flatten the encoded input
             for(unsigned int i = 0; i < encoded[d].size(); i++) {
                 for(unsigned int j = 0; j < encoded[d][i].size(); j++) {
                     data.push_back(encoded[d][i][j]);
                 }
             }
-            for(unsigned int i = 0; i < data.size(); i++) { // each encoded sample will be written in a single line
+            for(unsigned int i = 0; i < data.size(); i++) { // write each value of the encoded input splitted by spaces
                 f << data[i];
                 if(i != data.size() - 1) f << " ";
             }
@@ -206,4 +209,3 @@ void Encoder::encode() {
         f.close();
     }
 }
-
