@@ -24,6 +24,9 @@ def smoothing(line=[]):
         smooth.append(matmul/35) # 35 is normalization constant
     return smooth
 
+def mse(actual=[], prediction=[]):
+    return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
+
 def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
         download = DataReader(symbol, "yahoo", start, end)
@@ -55,25 +58,55 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
-def trend_validation(model_path="", symbol=""):
-    path = model_path + "/res/npy/"
-    raw = YahooFinance(symbol, "2021-01-01")
-    stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
-    print("\n|[ Trend Validation Results ]|")
-    print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")
-    for f in os.listdir(path):
-        if f.endswith(".npy"):
+def confidence_evaluation(model_path="", symbol=""):
+    actual = np.load(model_path + "/backtest/actual.npy")
+    backtest = np.load(model_path + "/backtest/backtest.npy")
+    error_constant = mse(actual.flatten(), backtest.flatten()) # model cost on entire backtest samples
+    ideal_models = [i for i in range(actual.shape[0]) if mse(actual[i], backtest[i]) < error_constant]
+
+    for f in os.listdir(model_path + "/res/npy/"):
+        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
-            if date != datetime.today().strftime("%Y-%m-%d"):
-                actual = normalize(stock[dates.index(date):])
-                prediction = np.load(path + f)[:len(actual)]
-                actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
-                prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
-                accuracy = int()
-                for i in range(len(actual_derivative)):
-                    if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
-                        accuracy += 1
-                accuracy *= int(100 / len(actual_derivative))
-                mse = sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
-                print("          {}                   {}%               {}" .format(date, accuracy, mse))
+            realtime = normalize(YahooFinance(symbol, date)["prices"])
+            if len(realtime) > 5:
+                prediction = np.load(model_path + "/res/npy/" + f)[:len(realtime)]
+                error = mse(realtime, prediction)
+                # analyze backtest mse distribution on backtest outputs with mse lower than error constant
+                # and indicate where the evaluating trend model is at
+                interval_error = [mse(actual[i][:len(realtime)], backtest[i][:len(realtime)]) for i in ideal_models]
+                interval = max(interval_error) / 10
+                distribution = 0
+                print("\nConfidence Evaluation via Backtest MSE Distribution Analysis [D+0 ~ D+{}]" .format(len(realtime)))
+                for i in range(1, 11):
+                    print("{}: " .format(interval * i), end="")
+                    for val in interval_error:
+                        if val > interval * (i - 1) and val < interval * i:
+                            print("*", end="")
+                            distribution += 1
+                    print(" ({}%)" .format(distribution * 100 / len(interval_error)), end="")
+                    if error > interval * (i - 1) and error < interval * i:
+                        print("            <======== PREDICTED MODEL", end="")
+                    print("")
+
+#def trend_validation(model_path="", symbol=""):
+#    path = model_path + "/res/npy/"
+#    raw = YahooFinance(symbol, "2021-01-01")
+#    stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
+#    print("\n|[ Trend Validation Results #]|")
+#    print("------------ Date ------------ Direction Accuracy ------------ MSE ------------")
+#    for f in os.listdir(path):
+#        if f.endswith(".npy"):
+#            date = f[:-4]
+#            if date != datetime.today().strftime("%Y-%m-%d"):
+#                actual = normalize(stock[dates.index(date):])
+#                prediction = np.load(path + f)[:len(actual)]
+#                actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
+#                prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
+#                accuracy = int()
+#                for i in range(len(actual_derivative)):
+#                    if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
+#                        accuracy += 1
+#                accuracy *= int(100 / len(actual_derivative))
+#                mse = sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
+#                print("          {}                   {}%               {}" .format(date, accuracy, mse))
 

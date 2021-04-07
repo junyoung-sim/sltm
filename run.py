@@ -18,7 +18,6 @@ model      = sys.argv[2]
 symbol     = sys.argv[3]
 
 model_path     = "./models/" + model
-evaluator_path = "./eval/" + model
 
 def init():
     print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
@@ -36,9 +35,7 @@ def init():
             model_path + "/trained-samples",
             model_path + "/res",
             model_path + "/res/npy",
-            model_path + "/res/prediction",
-            evaluator_path,
-            evaluator_path + "/dnn"
+            model_path + "/res/prediction"
         ]
         for d in required:
             if not os.path.exists(d): # check if required directory exists; if not, create it
@@ -86,36 +83,10 @@ def train():
         "learning_rate": learning_rate
     }
     print("Prediction DNN = ", hyper, "\n")
-    dnn = DeepNeuralNetwork(model_path, hyper)
-    dnn.train(dataset, iteration, backtest)
+    predictor = DeepNeuralNetwork(model_path, hyper)
+    predictor.train(dataset, iteration, backtest)
     if not os.path.exists(model_path + "/" + model):
         os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained
-    # train confidence evaluator model (only when training the prediction model involved backtesting)
-    if backtest != 0.00:
-        print("\nTraining confidence evaluator...\n")
-        dataset = {"input": [], "output": []}
-        try:
-            # read existing database of prediction model's backtest inputs and costs
-            dataset["input"] = np.load(evaluator_path + "/inputs.npy")
-            dataset["output"] = np.load(evaluator_path + "/costs.npy")
-        except Exception:
-            pass
-        # add backtest inputs and costs saved by prediction model to confidence evaluator database
-        for data in np.load(model_path + "/backtest/backtest_input.npy"):
-            dataset["input"].append(data)
-        for cost in np.load(model_path + "/backtest/backtest_costs.npy"):
-            dataset["output"].append(cost)
-        hyper = {
-            "architecture":[[25,25],[25,50],[50,1]], # *** HARD-CODED PARAMETER ***
-            "activation": "sigmoid",
-            "abs_synapse": 1.0,
-            "learning_rate": 0.01
-        }
-        evaluator = DeepNeuralNetwork(evaluator_path, hyper)
-        evaluator.train(dataset, 1000, 0.0)
-        with open(evaluator_path + "/inputs.npy", "wb") as f1, open(evaluator_path + "/costs.npy", "wb") as f2:
-            np.save(f1, dataset["input"])
-            np.save(f2, dataset["output"])
 
 def run():
     data = normalize(mavg(YahooFinance(symbol, "2019-01-01", "yyyy-mm-dd")["prices"][-171:], 50)) # process recent D-121 MAVG 50 input
@@ -139,12 +110,8 @@ def run():
     plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
     with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
-    # run confidence evaluator
-    evaluator = DeepNeuralNetwork(evaluator_path)
-    confidence = evaluator.run(encoded)[0]
-    print("Confidence = {}\n" .format(confidence))
-    # validate trend models with realtime trend
-    trend_validation(model_path, symbol)
+    # run confidence evaluation
+    confidence_evaluation(model_path, symbol)
 
 if __name__ == "__main__":
     if init():

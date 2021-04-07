@@ -80,11 +80,11 @@ class DeepNeuralNetwork:
             if i % (iteration / 10) == 0:
                 cost = self.sess.run(self.cost, feed_dict={self.input: training_input, self.output: training_output})
                 print("ITERATION #{}: COST = {}" .format(i, cost))
-        self.save() 
+        self.save()
         if test != 0.00:
             print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
             backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
-            # save backtesting samples (plot and data)
+            # save backtesting samples
             loop = tqdm.tqdm(total=backtest.shape[0], position=0, leave=False)
             for i in range(backtest.shape[0]):
                 loop.set_description("Saving backtested samples... ")
@@ -93,15 +93,10 @@ class DeepNeuralNetwork:
                 plt.plot(test_output[i], color="green")
                 plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
                 loop.update(1)
-            with open(self.path + "/backtest/backtest_input.npy", "wb") as f:
-                np.save(f, test_input)
-            # save the cost (MSE) of each backtest input (this is used for training the confidence evaluator)
-            costs = []
-            for i in range(test_input.shape[0]):
-                costs.append([self.sess.run(self.cost, feed_dict={self.input: [test_input[i]], self.output: [test_output[i]]})])
-            costs = np.array(costs)
-            with open(self.path + "/backtest/backtest_costs.npy", "wb") as f:
-                np.save(f, costs)
+            with open(self.path + "/backtest/actual.npy", "wb") as f:
+                np.save(f, test_output)
+            with open(self.path + "/backtest/backtest.npy", "wb") as f:
+                np.save(f, backtest)
         # save trained samples
         if input("Save trained samples? [yes/no]: ") == "yes":
             results = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
