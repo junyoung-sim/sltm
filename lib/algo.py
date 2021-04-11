@@ -68,22 +68,23 @@ def confidence_evaluation(model_path="", symbol=""):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
             realtime = normalize(YahooFinance(symbol, date)["prices"])
-            if len(realtime) > 5:
+            if len(realtime) >= 5:
                 prediction = np.load(model_path + "/res/npy/" + f)[:len(realtime)]
                 error = mse(realtime, prediction)
-                # analyze backtest mse distribution on backtest outputs with mse lower than error constant
+                # analyze backtest mse distribution on samples with mse lower than error constant
                 # and indicate where the evaluating trend model is at
                 interval_error = [mse(actual[i][:len(realtime)], backtest[i][:len(realtime)]) for i in ideal_models]
                 interval = max(interval_error) / 10
-                distribution = 0
-                print("\nConfidence Evaluation via Backtest MSE Distribution Analysis [D+0 ~ D+{}]" .format(len(realtime)))
+                print("\nTREND MODEL #{}" .format(date))
+                print("Confidence Evaluation via Backtest MSE Distribution Analysis [D+0 ~ D+{}]" .format(len(realtime)))
                 for i in range(1, 11):
-                    print("{}: " .format(interval * i), end="")
+                    print("{}: " .format(round(interval * i, 5)), end="")
+                    distribution = 0
                     for val in interval_error:
                         if val > interval * (i - 1) and val < interval * i:
                             print("*", end="")
                             distribution += 1
-                    print(" ({}%)" .format(distribution * 100 / len(interval_error)), end="")
+                    print(" ({}%)" .format(round(distribution * 100 / len(interval_error), 5)), end="")
                     if error > interval * (i - 1) and error < interval * i:
                         print("            <======== PREDICTED MODEL", end="")
                     print("")
