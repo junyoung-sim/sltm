@@ -35,7 +35,8 @@ def init():
             model_path + "/trained-samples",
             model_path + "/res",
             model_path + "/res/npy",
-            model_path + "/res/prediction"
+            model_path + "/res/prediction",
+            model_path + "/res/confidence"
         ]
         for d in required:
             if not os.path.exists(d): # check if required directory exists; if not, create it

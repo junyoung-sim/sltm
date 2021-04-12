@@ -63,31 +63,37 @@ def confidence_evaluation(model_path="", symbol=""):
     backtest = np.load(model_path + "/backtest/backtest.npy")
     error_constant = mse(actual.flatten(), backtest.flatten()) # model cost on entire backtest samples
     ideal_models = [i for i in range(actual.shape[0]) if mse(actual[i], backtest[i]) < error_constant]
-
+    # run statistical analysis based confidence evaluation
+    raw = YahooFinance(symbol, "2021-01-01")
+    stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
     for f in os.listdir(model_path + "/res/npy/"):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
-            realtime = normalize(YahooFinance(symbol, date)["prices"])
-            if len(realtime) >= 5:
-                prediction = np.load(model_path + "/res/npy/" + f)[:len(realtime)]
-                error = mse(realtime, prediction)
-                # analyze backtest mse distribution on samples with mse lower than error constant
-                # and indicate where the evaluating trend model is at
-                interval_error = [mse(actual[i][:len(realtime)], backtest[i][:len(realtime)]) for i in ideal_models]
-                interval = max(interval_error) / 10
-                print("\nTREND MODEL #{}" .format(date))
-                print("Confidence Evaluation via Backtest MSE Distribution Analysis [D+0 ~ D+{}]" .format(len(realtime)))
-                for i in range(1, 11):
-                    print("{}: " .format(round(interval * i, 5)), end="")
-                    distribution = 0
-                    for val in interval_error:
-                        if val > interval * (i - 1) and val < interval * i:
-                            print("*", end="")
-                            distribution += 1
-                    print(" ({}%)" .format(round(distribution * 100 / len(interval_error), 5)), end="")
-                    if error > interval * (i - 1) and error < interval * i:
-                        print("            <======== PREDICTED MODEL", end="")
-                    print("")
+            realtime = normalize(stock[dates.index(date):])
+            if len(realtime) > 5:
+                with open(model_path + "/res/confidence/" + date, "a+") as sheet:
+                    prediction = normalize(np.load(model_path + "/res/npy/" + f)[:len(realtime)])
+                    error = mse(realtime, prediction)
+                    fig = plt.figure()
+                    plt.plot(realtime, color="green")
+                    plt.plot(prediction, color="red")
+                    plt.show()
+                    # analyze backtest mse distribution on samples with mse lower than error constant
+                    # and indicate where the evaluating trend model is at
+                    interval_error = [mse(actual[i][:len(realtime)], backtest[i][:len(realtime)]) for i in ideal_models]
+                    interval = max(interval_error) / 10
+                    sheet.write("\n[D+0 ~ D+{}]\n" .format(len(realtime)))
+                    for i in range(1, 11):
+                        sheet.write("{}: " .format(round(interval * i, 5)))
+                        distribution = 0
+                        for val in interval_error:
+                            if val > interval * (i - 1) and val < interval * i:
+                                sheet.write("*")
+                                distribution += 1
+                        sheet.write(" ({}%)" .format(round(distribution * 100 / len(interval_error), 5)))
+                        if error > interval * (i - 1) and error < interval * i:
+                            sheet.write("            <======== PREDICTED MODEL")
+                        sheet.write("\n")
 
 #def trend_validation(model_path="", symbol=""):
 #    path = model_path + "/res/npy/"
