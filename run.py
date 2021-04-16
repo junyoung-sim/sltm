@@ -109,8 +109,9 @@ def run():
     plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
     with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
         np.save(f, result)
-    # run confidence evaluation
-    confidence_evaluation(model_path, symbol)
+    # realtime mse, confidence evaluation, and trade recommendation
+    evaluating_predictions = realtime_mse(model_path, symbol)
+    confidence_evaluation(model_path, evaluating_predictions)
 
 if __name__ == "__main__":
     if init():

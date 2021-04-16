@@ -58,35 +58,57 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
-def confidence_evaluation(model_path="", symbol=""):
-    actual = np.load(model_path + "/backtest/actual.npy")
-    backtest = np.load(model_path + "/backtest/backtest.npy")
-    error_constant = mse(actual.flatten(), backtest.flatten()) # model cost on entire backtest samples
-    ideal_models = [i for i in range(actual.shape[0]) if mse(actual[i], backtest[i]) < error_constant]
-    # run statistical analysis based confidence evaluation
-    print("Running confidence evaluation via backtest MSE distribution analysis...")
+def realtime_mse(model_path="", symbol=""):
     raw = YahooFinance(symbol, "2021-01-01")
-    stock, dates = mavg(raw["prices"], 10), raw["dates"][10:]
+    mavg10, dates = mavg(raw["prices"], 10), raw["dates"][10:]
+    # calculate realtime mse of prediction models that are 5 days old or more
+    evaluating_predictions = []
     for f in os.listdir(model_path + "/res/npy/"):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
-            realtime = normalize(stock[dates.index(date):])
-            if len(realtime) > 2:
-                print("{} [D+0 ~ D+{}]: " .format(date, len(realtime)), end="")
+            realtime = normalize(mavg10[dates.index(date):])
+            if len(realtime) >= 5:
+                print("{} [D+{}]: " .format(date, len(realtime)), end="")
                 prediction = normalize(np.load(model_path + "/res/npy/" + f)[:len(realtime)])
                 error = mse(realtime, prediction)
-                # analyze backtest mse distribution on samples with mse lower than error constant
-                # and indicate where the evaluating trend model is at
-                interval_error = [mse(actual[i][:len(realtime)], backtest[i][:len(realtime)]) for i in ideal_models]
-                interval = max(interval_error) / 10
-                for i in range(1, 11):
-                    distribution = 0
-                    for val in interval_error:
-                        if val > interval * (i - 1) and val < interval * i:
-                            distribution += 1
-                    distribution_prob = round(distribution * 100 / len(interval_error), 5)
-                    if error > interval * (i - 1) and error < interval * i:
-                        print("{}%" .format(distribution_prob), end="")
-                        break
-                print("")
+                print("MSE = {}" .format(round(error, 5)))
+                evaluating_predictions.append({"date": date, "realtime": realtime, "prediction": prediction, "error": error})
+    return evaluating_predictions
+
+def confidence_evaluation(model_path="", evaluating_predictions=[]):
+    lowest_mse = min([model["error"] for model in evaluating_predictions])
+    # find trend model with lowest mse (best model)
+    for model in evaluating_predictions:
+        if model["error"] == lowest_mse:
+            best = model
+            print("\nBEST MODEL = {}" .format(best["date"]))
+            plt.plot(best["realtime"], color="green")
+            plt.plot(best["prediction"], color="red")
+            plt.show()
+    # Confidence Evaluation via Backtest MSE Distribution Analysis
+    # find backtest samples with a mse lower than entire model's cost (ideal backtest samples)
+    actual = np.load(model_path + "/backtest/actual.npy")
+    backtest = np.load(model_path + "/backtest/backtest.npy")
+    general_cost = mse(actual.flatten(), backtest.flatten())
+    ideal = [i for i in range(actual.shape[0]) if mse(actual[i], backtest[i]) < general_cost]
+    # calculate the mse of ideal samples within the realtime segment length
+    segment_error = [mse(actual[i][:len(best["realtime"])], backtest[i][:len(best["realtime"])]) for i in ideal]
+    interval = max(segment_error) / 10
+    # detect range of mse with highest distribution probability among the ideal samples (confidence range)
+    majority, majority_interval = 0.00, 0.00
+    for i in range(1, 11):
+        distribution = 0
+        for val in segment_error:
+            if val > interval * (i - 1) and val < interval * i:
+                distribution += 1
+        probability = distribution / len(segment_error)
+        if probability > majority:
+            majority = probability
+            majority_interval = interval * i
+    # check if the best model is within the confidence range
+    print("CONFIDENCE = ", end="")
+    if best_model["error"] > majority_interval - interval and best_model["error"] < majority_interval:
+        print("{}%" .format(round(majority, 5)))
+    else:
+        print("Negative")
 
