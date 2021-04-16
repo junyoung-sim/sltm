@@ -82,9 +82,6 @@ def confidence_evaluation(model_path="", evaluating_predictions=[]):
         if model["error"] == lowest_mse:
             best = model
             print("\nBEST MODEL = {}" .format(best["date"]))
-            plt.plot(best["realtime"], color="green")
-            plt.plot(best["prediction"], color="red")
-            plt.show()
     # Confidence Evaluation via Backtest MSE Distribution Analysis
     # find backtest samples with a mse lower than entire model's cost (ideal backtest samples)
     actual = np.load(model_path + "/backtest/actual.npy")
@@ -107,8 +104,8 @@ def confidence_evaluation(model_path="", evaluating_predictions=[]):
             majority_interval = interval * i
     # check if the best model is within the confidence range
     print("CONFIDENCE = ", end="")
-    if best_model["error"] > majority_interval - interval and best_model["error"] < majority_interval:
-        print("{}%" .format(round(majority, 5)))
+    if best["error"] > majority_interval - interval and best["error"] < majority_interval:
+        print("{}" .format(round(majority, 5)))
     else:
-        print("Negative")
+        print("negative")
 
