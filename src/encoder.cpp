@@ -97,14 +97,14 @@ void Encoder::load() {
     // read input
     f1.open("./temp/input");
     if(f1.good()) {
-        while(getline(f1, line)) { // read each input written in each line
+        while(getline(f1, line)) { // each input is written in each line
             vector<float> row;
             vector<vector<float>> input;
             for(unsigned int i = 0; i < line.length(); i++) {
                 if(line[i] != ' ') val += line[i];
                 else {
                     row.push_back(stof(val));
-                    if(row.size() == 11) { // reshape input into 2D image (raster scanning order)
+                    if(row.size() == 11) { // reshaping input into 2D image (raster scanning order)
                          input.push_back(row);
                          row.clear();
                     }
@@ -135,7 +135,7 @@ void Encoder::encode() {
                 }
                 for(unsigned int i = 1; i < pad.size() - 1; i++) {
                     for(unsigned int j = 1; j < pad[i].size() - 1; j++) {
-                        pad[i][j] =  input[i-1][j-1];
+                        pad[i][j] = input[i-1][j-1];
                     }
                 }
                 input = pad;

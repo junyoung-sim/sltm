@@ -37,7 +37,7 @@ def init():
             model_path + "/res/prediction"
         ]
         for d in required:
-            if not os.path.exists(d): # check if required directory exists; if not, create it
+            if not os.path.exists(d): # check if required directories exists; if not, create them
                 os.mkdir(d)
         okay = True
     elif mode == "run":
@@ -48,9 +48,9 @@ def init():
     else:
         print("\nInvalid mode given!\n")
     if okay:
-        for root, dirs, files in os.walk("./temp"):
+        for root, dirs, files in os.walk("./temp"): # delete files in ./temp
             for f in files:
-                os.system("rm -rf ./temp/" + f)
+                os.system("rm ./temp/" + f)
         print("Building encoder...\n")
         os.system("./scripts/build")
     return okay
@@ -61,8 +61,8 @@ def train():
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
     backtest      = float(sys.argv[8])
-    # sample and save training dataset from historical data
-    dataset = generate_timeseries_dataset(symbol, date1, date2) # ./lib/algo.py 39:56
+    # time series sampling (./lib/algo.py 42:59)
+    dataset = generate_timeseries_dataset(symbol, date1, date2)
     # run encoder on training inputs (C coded executable)
     print("\n\nRunning encoder...\n")
     os.system("./encoder " + model)
