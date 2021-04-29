@@ -8,8 +8,8 @@ read command line arguments in this following order:
 """
 
 import os, sys
-import matplotlib.pyplot as plt
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 from lib import *
 
@@ -61,7 +61,7 @@ def train():
     learning_rate = float(sys.argv[6])
     iteration     = int(sys.argv[7])
     backtest      = float(sys.argv[8])
-    # time series sampling (./lib/algo.py 42:59)
+    # time series sampling (./lib/algo.py 61:79)
     dataset = generate_timeseries_dataset(symbol, date1, date2)
     # run encoder on training inputs (C coded executable)
     print("\n\nRunning encoder...\n")
@@ -88,7 +88,7 @@ def train():
         os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained
 
 def run():
-    data = normalize(mavg(YahooFinance(symbol, "2019-01-01", "yyyy-mm-dd")["prices"][-171:], 50)) # process recent D-121 MAVG 50 input
+    data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-171:], 50)) # process recent D-121 MAVG 50 input
     with open("./temp/input", "w+") as f: # save input
         for val in data:
             f.write(str(val) + " ")
@@ -102,16 +102,15 @@ def run():
     print("\nEncoded input:\n", encoded)
     # run prediction model
     predictor = DeepNeuralNetwork(model_path)
-    result = smoothing(predictor.run(encoded)[0])
+    result = predictor.run(encoded)[0]
     print("Model Prediction:\n", np.array(result), "\n")
     # save prediction results
     plt.plot(result, color="red")
-    plt.savefig(model_path + "/res/prediction/" + datetime.today().strftime("%Y-%m-%d") + ".png")
-    with open(model_path + "/res/npy/" + datetime.today().strftime("%Y-%m-%d") + ".npy", "wb") as f:
+    plt.savefig("{}/res/prediction/{}-{}.png" .format(model_path, datetime.today().strftime("%Y-%m-%d"), symbol))
+    with open("{}/res/npy/{}-{}.npy" .format(model_path, datetime.today().strftime("%Y-%m-%d"), symbol), "wb") as f:
         np.save(f, result)
-    # realtime mse, confidence evaluation, and trade recommendation
-    evaluating_predictions = realtime_mse(model_path, symbol)
-    confidence_evaluation(model_path, evaluating_predictions)
+    # validate trend models
+    validation(model_path)
 
 if __name__ == "__main__":
     if init():
@@ -119,3 +118,4 @@ if __name__ == "__main__":
             train()
         else:
             run()
+

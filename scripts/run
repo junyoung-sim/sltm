@@ -1,7 +1,0 @@
-#!/bin/sh
-
-for model in "./models"/*
-do
-  ./run.py run ${model:9} ${model:9}
-done
-

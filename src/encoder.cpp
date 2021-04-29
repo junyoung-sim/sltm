@@ -41,7 +41,7 @@ void Encoder::save() {
 void Encoder::load() {
     string line, val;
     vector<Layer> layers_read;
-
+    // load encoder parameters
     ifstream f1, f2;
     f1.open(path + "/layers");
     if(f1.good()) {

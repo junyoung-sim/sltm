@@ -2,7 +2,7 @@
 import os
 import numpy as np
 import tqdm as tqdm
-from datetime import datetime, timedelta
+from datetime import datetime
 import matplotlib.pyplot as plt
 from pandas_datareader.data import DataReader
 
@@ -27,27 +27,47 @@ def smoothing(line=[]):
 def mse(actual=[], prediction=[]):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def YahooFinance(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
+def vector_accuracy(actual=[], prediction=[]):
+    actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
+    prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
+    # vector analysis for accuracy evaluation
+    directional_accuracy, slope_accuracy = float(), float()
+    for i in range(len(actual_derivative)):
+        # directional accuarcy
+        if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
+            directional_accuracy += 1
+        # slope accuracy
+        slope_accuracy += 1 - abs(actual_derivative[i] - prediction_derivative[i]) / actual_derivative[i]
+    directional_accuracy /= len(actual_derivative)
+    slope_accuracy /= len(actual_derivative)
+    return (directional_accuracy + slope_accuracy) / 2
+
+def RealtimePrice(symbol=""):
+    price = list(DataReader(symbol, "yahoo", datetime.today().strftime("%Y-%m-%d"))["Adj Close"])[0]
+    return price
+
+def HistoricalData(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
         download = DataReader(symbol, "yahoo", start, end)
     else:
         download = DataReader(symbol, "yahoo", start)
     download.to_csv("./data/" + symbol + ".csv")
-    data = list(download["Adj Close"]) # adjusted close price
+    price = list(download["Adj Close"]) # adjusted close price
     with open("./data/" + symbol + ".csv", "r") as f:
          dates = [line[:10] for line in f.readlines()] # get date of each price
          dates.pop(0)
-    return {"prices": data, "dates": dates}
+    return {"price": price, "dates": dates}
 
 def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     training_input, training_output = [], []
-    raw = YahooFinance(symbol, start, end)
-    stock, dates = raw["prices"], raw["dates"]
-    loop = tqdm.tqdm(total=len(stock)-206, position=0, leave=False)
-    for i in range(len(stock)-206):
+    raw = HistoricalData(symbol, start, end)
+    price, dates = raw["price"], raw["dates"]
+    # sample time series dataset
+    loop = tqdm.tqdm(total=len(price)-206, position=0, leave=False)
+    for i in range(len(price)-206):
         loop.set_description("Processing time series... [{}]" .format(dates[i]))
-        training_input.append(normalize(mavg(stock[i:i+171], 50))) # D-121 MAVG 50 input
-        training_output.append(normalize(mavg(stock[i+121:i+206], 10))) # D+75 MAVG 10 output
+        training_input.append(normalize(mavg(price[i:i+171], 50))) # D-121 MAVG 50 input
+        training_output.append(normalize(mavg(price[i+121:i+206], 10))) # D+75 MAVG 10 output
         loop.update(1)
     training_input, training_output = np.array(training_input), np.array(training_output)
     with open("./temp/input", "w+") as f:
@@ -58,54 +78,17 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
-def realtime_mse(model_path="", symbol=""):
-    raw = YahooFinance(symbol, "2021-01-01")
-    mavg10, dates = mavg(raw["prices"], 10), raw["dates"][10:]
-    # calculate realtime mse of prediction models that are 5 days old or more
-    evaluating_predictions = []
-    for f in os.listdir(model_path + "/res/npy/"):
-        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
-            date = f[:-4]
-            realtime = normalize(mavg10[dates.index(date):])
-            if len(realtime) >= 5:
-                print("{} [D+{}]: " .format(date, len(realtime)), end="")
-                prediction = normalize(np.load(model_path + "/res/npy/" + f)[:len(realtime)])
-                error = mse(realtime, prediction)
-                print("MSE = {}" .format(round(error, 5)))
-                evaluating_predictions.append({"date": date, "realtime": realtime, "prediction": prediction, "error": error})
-    return evaluating_predictions
-
-def confidence_evaluation(model_path="", evaluating_predictions=[]):
-    lowest_mse = min([model["error"] for model in evaluating_predictions])
-    # find trend model with lowest mse (best model)
-    for model in evaluating_predictions:
-        if model["error"] == lowest_mse:
-            best = model
-            print("\nBEST MODEL = {}" .format(best["date"]))
-    # Confidence Evaluation via Backtest MSE Distribution Analysis
-    # find backtest samples with a mse lower than entire model's cost (ideal backtest samples)
-    actual = np.load(model_path + "/backtest/actual.npy")
-    backtest = np.load(model_path + "/backtest/backtest.npy")
-    general_cost = mse(actual.flatten(), backtest.flatten())
-    ideal = [i for i in range(actual.shape[0]) if mse(actual[i], backtest[i]) < general_cost]
-    # calculate the mse of ideal samples within the realtime segment length
-    segment_error = [mse(actual[i][:len(best["realtime"])], backtest[i][:len(best["realtime"])]) for i in ideal]
-    interval = max(segment_error) / 10
-    # detect range of mse with highest distribution probability among the ideal samples (confidence range)
-    majority, majority_interval = 0.00, 0.00
-    for i in range(1, 11):
-        distribution = 0
-        for val in segment_error:
-            if val > interval * (i - 1) and val < interval * i:
-                distribution += 1
-        probability = distribution / len(segment_error)
-        if probability > majority:
-            majority = probability
-            majority_interval = interval * i
-    # check if the best model is within the confidence range
-    print("CONFIDENCE = ", end="")
-    if best["error"] > majority_interval - interval and best["error"] < majority_interval:
-        print("{}" .format(round(majority, 5)))
-    else:
-        print("negative")
+def validation(model_path=""):
+    for f in os.listdir(model_path + "/res/npy"):
+        if f.endswith(".npy") and f[:10] != datetime.today().strftime("%Y-%m-%d"):
+            date, symbol = f[:10], f[11:-4]
+            raw = HistoricalData(symbol, "2021-01-01")
+            trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
+            # validate trend models that are at least 5 days old
+            actual = normalize(trend[dates.index(date):])
+            if len(actual) > 5:
+                prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
+                error = mse(actual, prediction) # mean squared error
+                accuracy = vector_accuracy(actual, prediction) # vector accuracy analysis (direction and slope)
+                print("{}-{} @D+{}: MSE = {}, Vector Acc = {}" .format(symbol, date, len(actual), error, round(accuracy, 2)))
 
