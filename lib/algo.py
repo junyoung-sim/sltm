@@ -55,7 +55,7 @@ def HistoricalData(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
     price = list(download["Adj Close"]) # adjusted close price
     with open("./data/" + symbol + ".csv", "r") as f:
          dates = [line[:10] for line in f.readlines()] # get date of each price
-         dates.pop(0)
+         del dates[0] # first line is category header
     return {"price": price, "dates": dates}
 
 def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
@@ -84,11 +84,16 @@ def validation(model_path=""):
             date, symbol = f[:10], f[11:-4]
             raw = HistoricalData(symbol, "2021-01-01")
             trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
-            # validate trend models that are at least 5 days old
+            # validate trend models that are at least 3 days old
             actual = normalize(trend[dates.index(date):])
-            if len(actual) > 5:
+            if len(actual) >= 3:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 error = mse(actual, prediction) # mean squared error
                 accuracy = vector_accuracy(actual, prediction) # vector accuracy analysis (direction and slope)
-                print("{}-{} @D+{}: MSE = {}, Vector Acc = {}" .format(symbol, date, len(actual), error, round(accuracy, 2)))
+                # output validation results
+                print("{}-{} @D+{}: MSE = {}, Vector Acc = {}" .format(symbol, date, len(actual), error, accuracy))
+                fig = plt.figure()
+                plt.plot(actual, color="green")
+                plt.plot(prediction, color="red")
+                plt.show()
 
