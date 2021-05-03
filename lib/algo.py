@@ -12,18 +12,6 @@ def normalize(data=[]):
 def mavg(data=[], window=int()):
     return [sum(data[i:i+window]) / window for i in range(0, len(data) - window)]
 
-def smoothing(line=[]):
-    smooth = []
-    kernel = [-3.0, 12.0, 17.0, 12.0, -3.0] # Savitzky-Golay filter
-    for p in range(len(line) - len(kernel) + 1):
-        k_i, matmul = 0, 0.00
-        for i in range(p, p + len(kernel)):
-            matmul += line[i] * kernel[k_i]
-            k_i += 1
-        k_i = 0
-        smooth.append(matmul/35) # 35 is normalization constant
-    return smooth
-
 def mse(actual=[], prediction=[]):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
