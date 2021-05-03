@@ -15,21 +15,6 @@ def mavg(data=[], window=int()):
 def mse(actual=[], prediction=[]):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def vector_accuracy(actual=[], prediction=[]):
-    actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
-    prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
-    # vector analysis for accuracy evaluation
-    directional_accuracy, slope_accuracy = float(), float()
-    for i in range(len(actual_derivative)):
-        # directional accuarcy
-        if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
-            directional_accuracy += 1
-        # slope accuracy
-        slope_accuracy += 1 - abs(actual_derivative[i] - prediction_derivative[i]) / actual_derivative[i]
-    directional_accuracy /= len(actual_derivative)
-    slope_accuracy /= len(actual_derivative)
-    return (directional_accuracy + slope_accuracy) / 2
-
 def RealtimePrice(symbol=""):
     price = list(DataReader(symbol, "yahoo", datetime.today().strftime("%Y-%m-%d"))["Adj Close"])[0]
     return price
@@ -77,9 +62,8 @@ def validation(model_path=""):
             if len(actual) >= 3:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 error = mse(actual, prediction) # mean squared error
-                accuracy = vector_accuracy(actual, prediction) # vector accuracy analysis (direction and slope)
                 # output validation results
-                print("{}-{} @D+{}: MSE = {}, Vector Acc = {}" .format(symbol, date, len(actual), error, accuracy))
+                print("{}-{} @D+{}: MSE = {}" .format(symbol, date, len(actual), error))
                 fig = plt.figure()
                 plt.plot(actual, color="green")
                 plt.plot(prediction, color="red")
