@@ -59,7 +59,7 @@ def validation(model_path=""):
             trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
             # validate trend models that are at least 3 days old
             actual = normalize(trend[dates.index(date):])
-            if len(actual) >= 3:
+            if len(actual) > 1:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 error = mse(actual, prediction) # mean squared error
                 # output validation results

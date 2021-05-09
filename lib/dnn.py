@@ -62,7 +62,7 @@ class DeepNeuralNetwork:
         try:
             with open(self.path + "/dnn/hyperparameters", "r") as f:
                 self.hyper = ast.literal_eval(f.read())
-                return True
+            return True
         except FileNotFoundError:
             return False
     def train(self, dataset={"input": [], "output": []}, iteration=int(), test=0.00):
