@@ -15,6 +15,18 @@ def mavg(data=[], window=int()):
 def mse(actual=[], prediction=[]):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
+def vector_analysis(actual=[], prediction=[]):
+    error = mse(actual, prediction)
+    # directional accuarcy
+    actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
+    prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
+    directional_accuracy = 0
+    for i in range(len(actual_derivative)):
+        if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
+            directional_accuracy += 1
+    directional_accuracy *= 100 / len(actual_derivative)
+    return directional_accuracy * (1 - error) # vector score
+
 def RealtimePrice(symbol=""):
     price = list(DataReader(symbol, "yahoo", datetime.today().strftime("%Y-%m-%d"))["Adj Close"])[0]
     return price
@@ -55,17 +67,18 @@ def validation(model_path=""):
     for f in os.listdir(model_path + "/res/npy"):
         if f.endswith(".npy") and f[:10] != datetime.today().strftime("%Y-%m-%d"):
             date, symbol = f[:10], f[11:-4]
-            raw = HistoricalData(symbol, "2021-01-01")
+            raw = HistoricalData(symbol, "2020-01-01")
             trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
             # validate trend models that are at least 3 days old
             actual = normalize(trend[dates.index(date):])
-            if len(actual) > 1:
+            if len(actual) > 1 and len(actual) < 75:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
-                error = mse(actual, prediction) # mean squared error
-                # output validation results
-                print("{}-{} @D+{}: MSE = {}" .format(symbol, date, len(actual), error))
-                fig = plt.figure()
-                plt.plot(actual, color="green")
-                plt.plot(prediction, color="red")
-                plt.show()
+                vector_score = round(vector_analysis(actual, prediction), 2)
+                # output and save validation results with vector score higher than 84
+                print("{}-{} @D+{}: Vector Score = {}" .format(symbol, date, len(actual), vector_score))
+                if vector_score > 84.00:
+                    fig = plt.figure()
+                    plt.plot(actual, color="green")
+                    plt.plot(prediction, color="red")
+                    plt.savefig("{}/res/validation/{}-{} [D+{} | VS={}].png" .format(model_path, symbol, date, len(actual), vector_score))
 

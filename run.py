@@ -34,7 +34,8 @@ def init():
             model_path + "/trained-samples",
             model_path + "/res",
             model_path + "/res/npy",
-            model_path + "/res/prediction"
+            model_path + "/res/prediction",
+            model_path + "/res/validation"
         ]
         for d in required:
             if not os.path.exists(d): # check if required directories exists; if not, create them
@@ -110,7 +111,8 @@ def run():
     with open("{}/res/npy/{}-{}.npy" .format(model_path, datetime.today().strftime("%Y-%m-%d"), symbol), "wb") as f:
         np.save(f, result)
     # validate trend models
-    validation(model_path)
+    if input("Review trend validations? [yes/no]: ") == "yes":
+        validation(model_path)
 
 if __name__ == "__main__":
     if init():
