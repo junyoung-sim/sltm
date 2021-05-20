@@ -36,9 +36,9 @@ def HistoricalData(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
         download = DataReader(symbol, "yahoo", start, end)
     else:
         download = DataReader(symbol, "yahoo", start)
-    download.to_csv("./data/" + symbol + ".csv")
+    download.to_csv("./data/{}.csv" .format(symbol))
     price = list(download["Adj Close"]) # adjusted close price
-    with open("./data/" + symbol + ".csv", "r") as f:
+    with open("./data/{}.csv" .format(symbol), "r") as f:
          dates = [line[:10] for line in f.readlines()] # get date of each price
          del dates[0] # first line is category header
     return {"price": price, "dates": dates}
@@ -63,22 +63,25 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
-def validation(model_path=""):
+def validation(model=""):
+    model_path = "./models/" + model
+    os.system("rm {}/res/validation/*.png" .format(model_path))
+    # validate predictions with real-time data
+    raw = HistoricalData(model, "2020-01-01")
+    trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
     for f in os.listdir(model_path + "/res/npy"):
-        if f.endswith(".npy") and f[:10] != datetime.today().strftime("%Y-%m-%d"):
-            date, symbol = f[:10], f[11:-4]
-            raw = HistoricalData(symbol, "2020-01-01")
-            trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
+        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
+            date = f[:-4]
             # validate trend models that are at least 3 days old
             actual = normalize(trend[dates.index(date):])
-            if len(actual) > 1 and len(actual) < 75:
+            if len(actual) > 1 and len(actual) <= 75:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 vector_score = round(vector_analysis(actual, prediction), 2)
                 # output and save validation results with vector score higher than 84
-                print("{}-{} @D+{}: Vector Score = {}" .format(symbol, date, len(actual), vector_score))
                 if vector_score > 84.00:
+                    print("{}-{} @D+{}: Vector Score = {}" .format(model, date, len(actual), vector_score))
                     fig = plt.figure()
                     plt.plot(actual, color="green")
                     plt.plot(prediction, color="red")
-                    plt.savefig("{}/res/validation/{}-{} [D+{} | VS={}].png" .format(model_path, symbol, date, len(actual), vector_score))
+                    plt.savefig("{}/res/validation/{} [D+{} | VS={}].png" .format(model_path, date, len(actual), vector_score))
 

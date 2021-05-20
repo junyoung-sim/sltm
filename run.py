@@ -2,9 +2,10 @@
 
 """ 
 read command line arguments in this following order:
-    0      1    2     3         4           5            6           7        8
-./run.py mode model symbol date1(start) date2(end) learning_rate iteration backtest
-         required         |             optional (only for training)
+    0      1    2         4           5            6           7        8
+./run.py mode model date1(start) date2(end) learning_rate iteration backtest
+       required    |             optional (only for training)
+model = symbol
 """
 
 import os, sys
@@ -15,11 +16,10 @@ from lib import *
 
 mode       = sys.argv[1]
 model      = sys.argv[2]
-symbol     = sys.argv[3]
 model_path = "./models/" + model
 
 def init():
-    print("\nModel: {}\nSymbol: {}\n" .format(model, symbol))
+    print("\nModel: {}\n" .format(model))
     okay = False
     if mode == "train":
         print("Initializing file system...")
@@ -57,13 +57,13 @@ def init():
     return okay
 
 def train():
-    date1         = sys.argv[4]
-    date2         = sys.argv[5]
-    learning_rate = float(sys.argv[6])
-    iteration     = int(sys.argv[7])
-    backtest      = float(sys.argv[8])
+    date1         = sys.argv[3]
+    date2         = sys.argv[4]
+    learning_rate = float(sys.argv[5])
+    iteration     = int(sys.argv[6])
+    backtest      = float(sys.argv[7])
     # time series sampling (./lib/algo.py 61:79)
-    dataset = generate_timeseries_dataset(symbol, date1, date2)
+    dataset = generate_timeseries_dataset(model, date1, date2)
     # run encoder on training inputs (C coded executable)
     print("\n\nRunning encoder...\n")
     os.system("./encoder " + model)
@@ -89,7 +89,7 @@ def train():
         os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained
 
 def run():
-    data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-171:], 50)) # process recent D-121 MAVG 50 input
+    data = normalize(mavg(HistoricalData(model, "2020-01-01")["price"][-171:], 50)) # process recent D-121 MAVG 50 input
     with open("./temp/input", "w+") as f: # save input
         for val in data:
             f.write(str(val) + " ")
@@ -107,12 +107,12 @@ def run():
     print("Model Prediction:\n", np.array(result), "\n")
     # save prediction results
     plt.plot(result, color="red")
-    plt.savefig("{}/res/prediction/{}-{}.png" .format(model_path, datetime.today().strftime("%Y-%m-%d"), symbol))
-    with open("{}/res/npy/{}-{}.npy" .format(model_path, datetime.today().strftime("%Y-%m-%d"), symbol), "wb") as f:
+    plt.savefig("{}/res/prediction/{}.png" .format(model_path, datetime.today().strftime("%Y-%m-%d")))
+    with open("{}/res/npy/{}.npy" .format(model_path, datetime.today().strftime("%Y-%m-%d")), "wb") as f:
         np.save(f, result)
     # validate trend models
     if input("Review trend validations? [yes/no]: ") == "yes":
-        validation(model_path)
+        validation(model)
 
 if __name__ == "__main__":
     if init():
