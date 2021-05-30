@@ -11,18 +11,15 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 tf.disable_v2_behavior()
 
 class DeepNeuralNetwork:
-    def __init__(self, path="", hyper={}):
-        """ hyper = {"architecture", "activation", "abs_synapse", "learning_rate"} """
+    def __init__(self, path=""):
         self.path = path
-        if not self.load(): # if the model exists, self.load() automatically loads hyperparameters that are saved
-            self.hyper = hyper # if the model doesn't exist, load given hyperparameters
-        # load hyperparameters
-        architecture  = self.hyper["architecture"]
-        activation    = self.hyper["activation"]
-        abs_synapse   = self.hyper["abs_synapse"]
-        learning_rate = self.hyper["learning_rate"]
+        # set hyperparameters
+        architecture  = [[25,25],[25,100],[100,75]]
+        activation    = "relu"
+        abs_synapse   = 1.00
+        learning_rate = 0.01
+        # setup the neural network (weights, hidden layers, and optimzer)
         with tf.Graph().as_default():
-            # setup architecture (weights and layers w/ neurons)
             self.global_step = tf.Variable(0, trainable=False, name="global_step")
             self.input, self.output = tf.placeholder(tf.float32), tf.placeholder(tf.float32)
             self.weights = [tf.Variable(tf.random_uniform([layer[0], layer[1]], -abs_synapse, abs_synapse)) for layer in architecture]
@@ -54,17 +51,6 @@ class DeepNeuralNetwork:
                 self.saver.restore(self.sess, ckpt.model_checkpoint_path) # load existing sessions saved in model directory
             else:
                 self.sess.run(tf.global_variables_initializer())
-    def save(self):
-        self.saver.save(self.sess, self.path + "/dnn/checkpoint.ckpt", global_step=self.global_step)
-        with open(self.path + "/dnn/hyperparameters", "w+") as f:
-            f.write(json.dumps(self.hyper))
-    def load(self):
-        try:
-            with open(self.path + "/dnn/hyperparameters", "r") as f:
-                self.hyper = ast.literal_eval(f.read())
-            return True
-        except FileNotFoundError:
-            return False
     def train(self, dataset={"input": [], "output": []}, iteration=int(), test=0.00):
         training_input, training_output = dataset["input"], dataset["output"]
         if test != 0.00:
@@ -80,7 +66,7 @@ class DeepNeuralNetwork:
             if i % (iteration / 10) == 0:
                 cost = self.sess.run(self.cost, feed_dict={self.input: training_input, self.output: training_output})
                 print("ITERATION #{}: COST = {}" .format(i, cost))
-        self.save()
+        self.saver.save(self.sess, self.path + "/dnn/checkpoint.ckpt", global_step=self.global_step)
         if test != 0.00:
             print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
             backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
@@ -93,10 +79,6 @@ class DeepNeuralNetwork:
                 plt.plot(test_output[i], color="green")
                 plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
                 loop.update(1)
-            with open(self.path + "/backtest/actual.npy", "wb") as f:
-                np.save(f, test_output)
-            with open(self.path + "/backtest/backtest.npy", "wb") as f:
-                np.save(f, backtest)
         # save trained samples
         if input("Save trained samples? [yes/no]: ") == "yes":
             results = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
@@ -111,3 +93,4 @@ class DeepNeuralNetwork:
     def run(self, data=[]):
         results = self.sess.run(self.layer[-1], feed_dict={self.input: data})
         return results
+

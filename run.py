@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 """ 
-read command line arguments in this following order:
-    0      1    2         4           5            6           7        8
-./run.py mode model date1(start) date2(end) learning_rate iteration backtest
-       required    |             optional (only for training)
-model = symbol
+    0      1    2         3           4         5        6
+./run.py mode model date1(start) date2(end) iteration backtest
+       required    |            only for training
+model should be the stock symbol
 """
 
 import os, sys
@@ -24,9 +23,6 @@ def init():
     if mode == "train":
         print("Initializing file system...")
         required = [
-            "./temp",
-            "./data",
-            "./models",
             model_path,
             model_path + "/kernels",
             model_path + "/dnn",
@@ -59,9 +55,8 @@ def init():
 def train():
     date1         = sys.argv[3]
     date2         = sys.argv[4]
-    learning_rate = float(sys.argv[5])
-    iteration     = int(sys.argv[6])
-    backtest      = float(sys.argv[7])
+    iteration     = int(sys.argv[5])
+    backtest      = float(sys.argv[6])
     # time series sampling (./lib/algo.py 61:79)
     dataset = generate_timeseries_dataset(model, date1, date2)
     # run encoder on training inputs (C coded executable)
@@ -76,14 +71,7 @@ def train():
     dataset["input"] = np.array(encoded)
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
     # train prediction model
-    hyper = {
-        "architecture":[[25,25],[25,100],[100,75]],
-        "activation": "relu",
-        "abs_synapse": 1.0,
-        "learning_rate": learning_rate
-    }
-    print("Prediction DNN = ", hyper, "\n")
-    predictor = DeepNeuralNetwork(model_path, hyper)
+    predictor = DeepNeuralNetwork(model_path)
     predictor.train(dataset, iteration, backtest)
     if not os.path.exists(model_path + "/" + model):
         os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained

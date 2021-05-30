@@ -72,13 +72,12 @@ def validation(model=""):
     for f in os.listdir(model_path + "/res/npy"):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
-            # validate trend models that are at least 3 days old
             actual = normalize(trend[dates.index(date):])
             if len(actual) > 1 and len(actual) <= 75:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 vector_score = round(vector_analysis(actual, prediction), 2)
                 # output and save validation results with vector score higher than 84
-                if vector_score > 84.00:
+                if vector_score > 75.00:
                     print("{}-{} @D+{}: Vector Score = {}" .format(model, date, len(actual), vector_score))
                     fig = plt.figure()
                     plt.plot(actual, color="green")

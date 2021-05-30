@@ -13,7 +13,7 @@ Architecture:
     Training Cost: 0.0253
     Backtest Cost: 0.2043
 
-10000 ~ 20000: 2000-01-01 ~ 2021-02-28 (Backtest: 0%)
+10000 ~ 20000: 2000-01-01 ~ 2021-01-01 (Backtest: 0%)
 =======================================================
     (Total, Trained, Backtest): (5078, 5078, 0)
     Training Cost: 0.0280
