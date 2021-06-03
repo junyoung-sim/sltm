@@ -69,18 +69,22 @@ def validation(model=""):
     # validate predictions with real-time data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
+    best = {"vector_score": 0, "date": "yyyy-mm-dd"}
     for f in os.listdir(model_path + "/res/npy"):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
             actual = normalize(trend[dates.index(date):])
-            if len(actual) > 1 and len(actual) <= 75:
+            if len(actual) > 10 and len(actual) <= 75:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 vector_score = round(vector_analysis(actual, prediction), 2)
                 # output and save validation results with vector score higher than 84
                 if vector_score > 75.00:
-                    print("{}-{} @D+{}: Vector Score = {}" .format(model, date, len(actual), vector_score))
+                    if vector_score > best["vector_score"]:
+                        best["vector_score"] = vector_score
+                        best["date"] = date
                     fig = plt.figure()
                     plt.plot(actual, color="green")
                     plt.plot(prediction, color="red")
                     plt.savefig("{}/res/validation/{} [D+{} | VS={}].png" .format(model_path, date, len(actual), vector_score))
+    print("Best Performing Model:\n    {}-{}: Vector Score = {}" .format(model, best["date"], best["vector_score"]))
 
