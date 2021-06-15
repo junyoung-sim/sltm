@@ -31,7 +31,8 @@ def init():
             model_path + "/res",
             model_path + "/res/npy",
             model_path + "/res/prediction",
-            model_path + "/res/validation"
+            model_path + "/res/validation",
+            model_path + "/res/expired"
         ]
         for d in required:
             if not os.path.exists(d): # check if required directories exists; if not, create them

@@ -69,26 +69,29 @@ def local_minmax(model="", prediction_date=""):
 def validation(model=""):
     model_path = "./models/" + model
     os.system("rm {}/res/validation/*.png" .format(model_path))
-    # validate predictions with real-time data
+    # validate predictions with actual trend data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
-    best = {"vector_score": 0.0, "date": "yyyy-mm-dd"}
     for f in os.listdir(model_path + "/res/npy"):
-        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
+        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d") and f[:-4] != "2021-06-14":
             date = f[:-4]
             actual = normalize(trend[dates.index(date):])
-            if len(actual) > 10 and len(actual) <= 75:
-                prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
-                vector_score = round(vector_analysis(actual, prediction), 2)
-                # output and save validation results with vector score higher than 75%
-                if vector_score > 70.00:
+            if len(actual) > 10:
+                if len(actual) >= 75: # expired predictions
+                    actual = actual[:75]
+                    prediction = np.load("{}/res/npy/{}" .format(model_path, f))
                     fig = plt.figure()
-                    plt.plot(actual, color="green")
                     plt.plot(prediction, color="red")
-                    plt.savefig("{}/res/validation/{} [D+{} | VS={}].png" .format(model_path, date, len(actual), vector_score))
-                    # identify prediction with highest vector score
-                    if vector_score > best["vector_score"]:
-                        best["vector_score"] = vector_score
-                        best["date"] = date
-    print("Best Performing Model:\n    {}-{}: Vector Score = {}" .format(model, best["date"], best["vector_score"]))
+                    plt.plot(actual, color="green")
+                    plt.savefig("./models/{}/res/expired/{}.png" .format(model, date))
+                    os.system("mv ./models/{}/res/npy/{}.npy ./models/{}/res/expired/{}.npy" .format(model, date, model, date))
+                    os.system("rm ./models/{}/res/prediction/{}.png" .format(model, date))
+                else:
+                    prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
+                    vector_score = round(vector_analysis(actual, prediction), 2)
+                    if vector_score > 70.00:
+                        fig = plt.figure()
+                        plt.plot(prediction, color="red")
+                        plt.plot(actual, color="green")
+                        plt.savefig("./models/{}/res/validation/{} [D+{} VS={}].png" .format(model, date, len(actual), vector_score))
 

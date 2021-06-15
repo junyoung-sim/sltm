@@ -5,4 +5,6 @@ do
   rm -rf ${model}/res/npy/*.npy
   rm -rf ${model}/res/prediction/*.png
   rm -rf ${model}/res/validation/*.png
+  rm -rf ${model}/res/expired/*.png
+  rm -rf ${model}/res/expired/*.npy
 done
