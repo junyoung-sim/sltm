@@ -99,8 +99,7 @@ def run():
     with open("{}/res/npy/{}.npy" .format(model_path, datetime.today().strftime("%Y-%m-%d")), "wb") as f:
         np.save(f, result)
     # validate trend models
-    if input("Review trend validations? [yes/no]: ") == "yes":
-        validation(model)
+    validation(model)
 
 if __name__ == "__main__":
     if init():

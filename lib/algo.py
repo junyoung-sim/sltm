@@ -63,13 +63,16 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
+def local_minmax(model="", prediction_date=""):
+    raw = HistoricalData(model, "2000-01-01")
+
 def validation(model=""):
     model_path = "./models/" + model
     os.system("rm {}/res/validation/*.png" .format(model_path))
     # validate predictions with real-time data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
-    best = {"vector_score": 0, "date": "yyyy-mm-dd"}
+    best = {"vector_score": 0.0, "date": "yyyy-mm-dd"}
     for f in os.listdir(model_path + "/res/npy"):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
@@ -77,14 +80,15 @@ def validation(model=""):
             if len(actual) > 10 and len(actual) <= 75:
                 prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                 vector_score = round(vector_analysis(actual, prediction), 2)
-                # output and save validation results with vector score higher than 84
-                if vector_score > 75.00:
-                    if vector_score > best["vector_score"]:
-                        best["vector_score"] = vector_score
-                        best["date"] = date
+                # output and save validation results with vector score higher than 75%
+                if vector_score > 70.00:
                     fig = plt.figure()
                     plt.plot(actual, color="green")
                     plt.plot(prediction, color="red")
                     plt.savefig("{}/res/validation/{} [D+{} | VS={}].png" .format(model_path, date, len(actual), vector_score))
+                    # identify prediction with highest vector score
+                    if vector_score > best["vector_score"]:
+                        best["vector_score"] = vector_score
+                        best["date"] = date
     print("Best Performing Model:\n    {}-{}: Vector Score = {}" .format(model, best["date"], best["vector_score"]))
 
