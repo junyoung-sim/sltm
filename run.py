@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 """ 
-    0      1    2         3           4         5        6
-./run.py mode model date1(start) date2(end) iteration backtest
-       required    |            only for training
-model should be the stock symbol
+    0      1    2         3           4       5      6
+./run.py mode model date1(start) date2(end) epoch backtest
+      required     |          only for training
+
+<model> should be the stock symbol
+<date1> and <date2> should be in YYYY-MM-DD format
+<date2> can be stated as yyyy-mm-dd as an alternative for the current date
 """
 
 import os, sys
 from datetime import datetime
 import matplotlib.pyplot as plt
-
 from lib import *
 
 mode       = sys.argv[1]
@@ -18,10 +20,10 @@ model      = sys.argv[2]
 model_path = "./models/" + model
 
 def init():
-    print("\nModel: {}\n" .format(model))
+    print("\nModel: {}" .format(model))
     okay = False
     if mode == "train":
-        print("Initializing file system...")
+        print("\nInitializing file system...")
         required = [
             model_path,
             model_path + "/kernels",
@@ -40,6 +42,7 @@ def init():
         okay = True
     elif mode == "run":
         if os.path.exists("{}/{}" .format(model_path, model)): # checking if trained model exists
+            print("Model detected!")
             okay = True
         else:
             print("\nRequested model does not exist!\n")
@@ -48,22 +51,20 @@ def init():
     if okay:
         for root, dirs, files in os.walk("./temp"): # delete files in ./temp
             for f in files:
-                os.system("rm ./temp/" + f)
-        print("Building encoder...\n")
+                os.system("rm ./temp/{}" .format(f))
+        print("\nBuilding the encoder...\n")
         os.system("./scripts/build")
     return okay
 
 def train():
-    date1         = sys.argv[3]
-    date2         = sys.argv[4]
-    iteration     = int(sys.argv[5])
-    backtest      = float(sys.argv[6])
-    # time series sampling (./lib/algo.py 61:79)
-    dataset = generate_timeseries_dataset(model, date1, date2)
-    # run encoder on training inputs (C coded executable)
-    print("\n\nRunning encoder...\n")
-    os.system("./encoder " + model)
-    print("")
+    date1    = sys.argv[3] # start date
+    date2    = sys.argv[4] # end date
+    epoch    = int(sys.argv[5])
+    backtest = float(sys.argv[6]) # last n% of the dataset will be backtested
+    # time series sampling
+    dataset = sample_timeseries_dataset(model, date1, date2)
+    # run encoder on training inputs (C executable)
+    os.system("./encoder {}" .format(model))
     # read encoded inputs
     encoded = []
     with open("./temp/encoded", "r") as f:
@@ -73,17 +74,13 @@ def train():
     print("{} samples (Size = {})\n{}\n" .format(dataset["input"].shape[0], dataset["input"].shape[1], dataset["input"]))    
     # train prediction model
     predictor = DeepNeuralNetwork(model_path)
-    predictor.train(dataset, iteration, backtest)
-    if not os.path.exists(model_path + "/" + model):
-        os.system("touch " + model_path + "/" + model) # create a file indicating that the prediction model is trained
+    predictor.train(dataset, epoch, backtest)
+    if not os.path.exists("{}/{}" .format(model_path, model)):
+        os.system("touch {}/{}" .format(model_path, model)) # create a file indicating that the prediction model is trained
 
 def run():
-    data = normalize(mavg(HistoricalData(model, "2020-01-01")["price"][-171:], 50)) # process recent D-121 MAVG 50 input
-    with open("./temp/input", "w+") as f: # save input
-        for val in data:
-            f.write(str(val) + " ")
+    sample_recent_input(model) # process recent D-121 MAVG 50 input
     # run encoder on input
-    print("Running encoder...\n")
     os.system("./encoder " + model)
     # read encoded input
     encoded = []
@@ -104,8 +101,5 @@ def run():
 
 if __name__ == "__main__":
     if init():
-        if mode == "train":
-            train()
-        else:
-            run()
+        eval(mode + "()")
 

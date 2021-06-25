@@ -11,10 +11,10 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 tf.disable_v2_behavior()
 
 class DeepNeuralNetwork:
-    def __init__(self, path=""):
+    def __init__(self, path:str):
         self.path = path
         # set hyperparameters
-        architecture  = [[25,25],[25,100],[100,75]]
+        architecture  = [[25,25],[25,100],[100,75]] # [25,25],[25,100],[100,75]
         activation    = "relu"
         abs_synapse   = 1.00
         learning_rate = 0.01
@@ -79,6 +79,10 @@ class DeepNeuralNetwork:
                 plt.plot(test_output[i], color="green")
                 plt.savefig(self.path + "/backtest/" + "test" + str(i) + ".png")
                 loop.update(1)
+            with open(self.path + "/backtest/actual.npy", "wb") as f:
+                np.save(f, test_output)
+            with open(self.path + "/backtest/backtest.npy", "wb") as f:
+                np.save(f, backtest)
         # save trained samples
         if input("Save trained samples? [yes/no]: ") == "yes":
             results = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})

@@ -4,34 +4,32 @@ import numpy as np
 import tqdm as tqdm
 from datetime import datetime
 import matplotlib.pyplot as plt
-from pandas_datareader.data import DataReader
+from pandas_datareader import DataReader
 
-def normalize(data=[]):
+def normalize(data:list):
     return [(p - min(data)) / (max(data) - min(data)) for p in data]
 
-def mavg(data=[], window=int()):
-    return [sum(data[i:i+window]) / window for i in range(0, len(data) - window)]
+def mavg(data:list, window:int):
+    return [sum(data[i:i+window]) / window for i in range(len(data) - window)]
 
-def mse(actual=[], prediction=[]):
+def mse(actual:list, prediction:list):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def vector_analysis(actual=[], prediction=[]):
+def vector_analysis(actual:list, prediction:list):
+    # value error (mean squared error)
     error = mse(actual, prediction)
     # directional accuarcy
-    actual_derivative = [actual[i+1] - actual[i] for i in range(len(actual) - 1)]
-    prediction_derivative = [prediction[i+1] - prediction[i] for i in range(len(prediction) - 1)]
     directional_accuracy = 0
-    for i in range(len(actual_derivative)):
-        if abs(actual_derivative[i]) / actual_derivative[i] == abs(prediction_derivative[i]) / prediction_derivative[i]:
+    for i in range(len(actual) - 1):
+        actual_derivative = actual[i+1] - actual[i]
+        prediction_derivative = prediction[i+1] - prediction[i]
+        if abs(actual_derivative) / actual_derivative == abs(prediction_derivative) / prediction_derivative:
             directional_accuracy += 1
-    directional_accuracy *= 100 / len(actual_derivative)
-    return directional_accuracy * (1 - error) # vector score
+    directional_accuracy /= len(actual) - 1
+    score = directional_accuracy * (1 - error)
+    return score
 
-def RealtimePrice(symbol=""):
-    price = list(DataReader(symbol, "yahoo", datetime.today().strftime("%Y-%m-%d"))["Adj Close"])[0]
-    return price
-
-def HistoricalData(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
+def HistoricalData(symbol:str, start:str, end:str="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
         download = DataReader(symbol, "yahoo", start, end)
     else:
@@ -43,14 +41,14 @@ def HistoricalData(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
          del dates[0] # first line is category header
     return {"price": price, "dates": dates}
 
-def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd"):
+def sample_timeseries_dataset(symbol:str, start:str, end:str="yyyy-mm-dd"):
     training_input, training_output = [], []
     raw = HistoricalData(symbol, start, end)
     price, dates = raw["price"], raw["dates"]
     # sample time series dataset
     loop = tqdm.tqdm(total=len(price)-206, position=0, leave=False)
     for i in range(len(price)-206):
-        loop.set_description("Processing time series... [{}]" .format(dates[i]))
+        loop.set_description("Processing time series... [{} ~ {}]" .format(dates[i], dates[i+205]))
         training_input.append(normalize(mavg(price[i:i+171], 50))) # D-121 MAVG 50 input
         training_output.append(normalize(mavg(price[i+121:i+206], 10))) # D+75 MAVG 10 output
         loop.update(1)
@@ -58,40 +56,44 @@ def generate_timeseries_dataset(symbol="", start="yyyy-mm-dd", end="yyyy-mm-dd")
     with open("./temp/input", "w+") as f:
         for i in range(training_input.shape[0]): # write each input into each line
             for val in training_input[i]:
-                f.write(str(val) + " ")
+                f.write("{} " .format(val))
             if i != training_input.shape[0] - 1:
                 f.write("\n")
     return {"input": training_input, "output": training_output}
 
-def local_minmax(model="", prediction_date=""):
-    raw = HistoricalData(model, "2000-01-01")
+def sample_recent_input(symbol:str):
+    data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-171:], 50))
+    with open("./temp/input", "w+") as f:
+        for val in data:
+            f.write("{} " .format(val))
 
-def validation(model=""):
+def validation(model:str):
     model_path = "./models/" + model
     os.system("rm {}/res/validation/*.png" .format(model_path))
     # validate predictions with actual trend data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
     for f in os.listdir(model_path + "/res/npy"):
-        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d") and f[:-4] != "2021-06-14":
+        if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
-            actual = normalize(trend[dates.index(date):])
+            actual = trend[dates.index(date):]
             if len(actual) > 10:
                 if len(actual) >= 75: # expired predictions
-                    actual = actual[:75]
+                    actual = normalize(actual[:75])
                     prediction = np.load("{}/res/npy/{}" .format(model_path, f))
                     fig = plt.figure()
                     plt.plot(prediction, color="red")
                     plt.plot(actual, color="green")
-                    plt.savefig("./models/{}/res/expired/{}.png" .format(model, date))
-                    os.system("mv ./models/{}/res/npy/{}.npy ./models/{}/res/expired/{}.npy" .format(model, date, model, date))
-                    os.system("rm ./models/{}/res/prediction/{}.png" .format(model, date))
+                    plt.savefig("{}/res/expired/{}.png" .format(model_path, date))
+                    os.system("mv {}/res/npy/{}.npy {}/res/expired/{}.npy" .format(model_path, date, model_path, date))
+                    os.system("rm {}/res/prediction/{}.png" .format(model_path, date))
                 else:
+                    actual = normalize(actual)
                     prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                     vector_score = round(vector_analysis(actual, prediction), 2)
-                    if vector_score > 70.00:
+                    if vector_score > 0.64:
                         fig = plt.figure()
                         plt.plot(prediction, color="red")
                         plt.plot(actual, color="green")
-                        plt.savefig("./models/{}/res/validation/{} [D+{} VS={}].png" .format(model, date, len(actual), vector_score))
+                        plt.savefig("{}/res/validation/{} [D+{} VS={}].png" .format(model_path, date, len(actual), vector_score))
 
