@@ -4,7 +4,7 @@ import numpy as np
 import tqdm as tqdm
 from datetime import datetime
 import matplotlib.pyplot as plt
-from pandas_datareader import DataReader
+import yfinance as yf
 
 def normalize(data:list):
     return [(p - min(data)) / (max(data) - min(data)) for p in data]
@@ -15,27 +15,13 @@ def mavg(data:list, window:int):
 def mse(actual:list, prediction:list):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def vector_analysis(actual:list, prediction:list):
-    # value error (mean squared error)
-    error = mse(actual, prediction)
-    # directional accuarcy
-    directional_accuracy = 0
-    for i in range(len(actual) - 1):
-        actual_derivative = actual[i+1] - actual[i]
-        prediction_derivative = prediction[i+1] - prediction[i]
-        if abs(actual_derivative) / actual_derivative == abs(prediction_derivative) / prediction_derivative:
-            directional_accuracy += 1
-    directional_accuracy /= len(actual) - 1
-    score = directional_accuracy * (1 - error)
-    return score
-
 def HistoricalData(symbol:str, start:str, end:str="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
-        download = DataReader(symbol, "yahoo", start, end)
+        data = yf.download(symbol, start, end)
     else:
-        download = DataReader(symbol, "yahoo", start)
-    download.to_csv("./data/{}.csv" .format(symbol))
-    price = list(download["Adj Close"]) # adjusted close price
+        data = yf.download(symbol, start)
+    data.to_csv("./data/{}.csv" .format(symbol))
+    price = list(data["Adj Close"]) # adjusted close price
     with open("./data/{}.csv" .format(symbol), "r") as f:
          dates = [line[:10] for line in f.readlines()] # get date of each price
          del dates[0] # first line is category header
@@ -70,6 +56,10 @@ def sample_recent_input(symbol:str):
 def validation(model:str):
     model_path = "./models/" + model
     os.system("rm {}/res/validation/*.png" .format(model_path))
+    # get model backtest MSE
+    actual = np.load("{}/backtest/actual.npy" .format(model_path))
+    backtest = np.load("{}/backtest/backtest.npy" .format(model_path))
+    threshold = mse(actual.flatten(), backtest.flatten())
     # validate predictions with actual trend data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
@@ -90,10 +80,10 @@ def validation(model:str):
                 else:
                     actual = normalize(actual)
                     prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
-                    vector_score = round(vector_analysis(actual, prediction), 2)
-                    if vector_score > 0.64:
+                    error = round(mse(actual, prediction), 4)
+                    if error < threshold:
                         fig = plt.figure()
                         plt.plot(prediction, color="red")
                         plt.plot(actual, color="green")
-                        plt.savefig("{}/res/validation/{} [D+{} VS={}].png" .format(model_path, date, len(actual), vector_score))
+                        plt.savefig("{}/res/validation/{} [D+{} MSE={}].png" .format(model_path, date, len(actual), error))
 

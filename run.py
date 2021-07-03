@@ -42,7 +42,7 @@ def init():
         okay = True
     elif mode == "run":
         if os.path.exists("{}/{}" .format(model_path, model)): # checking if trained model exists
-            print("Model detected!")
+            print("Model detected!\n")
             okay = True
         else:
             print("\nRequested model does not exist!\n")
@@ -52,8 +52,6 @@ def init():
         for root, dirs, files in os.walk("./temp"): # delete files in ./temp
             for f in files:
                 os.system("rm ./temp/{}" .format(f))
-        print("\nBuilding the encoder...\n")
-        os.system("./scripts/build")
     return okay
 
 def train():

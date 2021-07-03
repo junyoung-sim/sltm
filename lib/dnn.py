@@ -4,6 +4,7 @@ import os, logging, json, ast
 import tensorflow.compat.v1 as tf
 import matplotlib.pyplot as plt
 import numpy as np
+from .algo import normalize, mse
 
 # suppress warnings from TensorFlow
 logging.disable(logging.WARNING)
@@ -68,11 +69,11 @@ class DeepNeuralNetwork:
                 print("ITERATION #{}: COST = {}" .format(i, cost))
         self.saver.save(self.sess, self.path + "/dnn/checkpoint.ckpt", global_step=self.global_step)
         if test != 0.00:
-            print("BACKTEST COST = ", self.sess.run(self.cost, feed_dict={self.input: test_input, self.output: test_output}))
-            backtest = self.sess.run(self.layer[-1], feed_dict={self.input: test_input})
+            backtest = np.array([normalize(result) for result in self.sess.run(self.layer[-1], feed_dict={self.input: test_input})])
+            print("BACKTEST COST = ", mse(test_output.flatten(), backtest.flatten()))            
             # save backtesting samples
-            loop = tqdm.tqdm(total=backtest.shape[0], position=0, leave=False)
-            for i in range(backtest.shape[0]):
+            loop = tqdm.tqdm(total=len(backtest), position=0, leave=False)
+            for i in range(len(backtest)):
                 loop.set_description("Saving backtested samples... ")
                 fig = plt.figure()
                 plt.plot(backtest[i], color="red")
@@ -85,16 +86,16 @@ class DeepNeuralNetwork:
                 np.save(f, backtest)
         # save trained samples
         if input("Save trained samples? [yes/no]: ") == "yes":
-            results = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
-            loop = tqdm.tqdm(total=results.shape[0], position=0, leave=False)
-            for i in range(results.shape[0]):
+            trained = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
+            loop = tqdm.tqdm(total=trained.shape[0], position=0, leave=False)
+            for i in range(trained.shape[0]):
                 loop.set_description("Saving trained samples... ")
                 fig = plt.figure()
-                plt.plot(results[i], color="red")
+                plt.plot(trained[i], color="red")
                 plt.plot(training_output[i], color="green")
                 plt.savefig(self.path + "/trained-samples/sample" + str(i) + ".png")
                 loop.update(1)
     def run(self, data=[]):
-        results = self.sess.run(self.layer[-1], feed_dict={self.input: data})
+        results = [normalize(result) for result in self.sess.run(self.layer[-1], feed_dict={self.input: data})]
         return results
 

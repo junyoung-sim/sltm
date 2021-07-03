@@ -33,8 +33,8 @@ public:
             }
         }
     }
-    std::tuple<unsigned int, unsigned int, bool, std::string, unsigned int> get_parameters() { return parameters; }
-    std::vector<std::vector<float>> get_kernel() { return kernel; }
+    std::tuple<unsigned int, unsigned int, bool, std::string, unsigned int> *get_parameters() { return &parameters; }
+    std::vector<std::vector<float>> *get_kernel() { return &kernel; }
 };
 
 class Encoder
