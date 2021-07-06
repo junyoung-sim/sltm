@@ -15,7 +15,7 @@ def mavg(data:list, window:int):
 def mse(actual:list, prediction:list):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def HistoricalData(symbol:str, start:str, end:str="yyyy-mm-dd"):
+def HistoricalData(symbol:str, start:str, end="yyyy-mm-dd"):
     if end != "yyyy-mm-dd":
         data = yf.download(symbol, start, end)
     else:
@@ -27,7 +27,7 @@ def HistoricalData(symbol:str, start:str, end:str="yyyy-mm-dd"):
          del dates[0] # first line is category header
     return {"price": price, "dates": dates}
 
-def sample_timeseries_dataset(symbol:str, start:str, end:str="yyyy-mm-dd"):
+def sample_timeseries_dataset(symbol:str, start:str, end="yyyy-mm-dd"):
     training_input, training_output = [], []
     raw = HistoricalData(symbol, start, end)
     price, dates = raw["price"], raw["dates"]
