@@ -133,7 +133,6 @@ void Encoder::encode() {
             tuple<unsigned int, unsigned int, bool, std::string, unsigned int> *parameters; parameters = layer[l].get_parameters();
             // padding
             if(get<PADDING>(*parameters)) {
-                pad.clear();
                 for(unsigned int i = 0; i < (*input).size() + 2; i++) {
                     pad.push_back(vector<float>((*input).size() + 2, 0.00)); 
                 }
@@ -145,7 +144,6 @@ void Encoder::encode() {
                 input = &pad;
             }
             // convolution
-            convolved.clear();
             vector<vector<float>> *kernel; kernel = layer[l].get_kernel();
             unsigned int conv_size = get<CONV_SIZE>(*parameters);
             unsigned int stride = get<STRIDE>(*parameters);
@@ -184,10 +182,10 @@ void Encoder::encode() {
                 }
                 pooled.push_back(row);
             }
+            pad.clear(); convolved.clear();
             input = &pooled;
         }
         dataset[d].clear();
-        pad.clear(); convolved.clear();
         encoded.push_back(*input);
     }
     // save encoded inputs

@@ -23,7 +23,7 @@ for n in range(actual.shape[0]):
         fig = plt.figure()
         plt.plot(actual[n], color="green")
         plt.plot(backtest[n], color="red")
-        plt.savefig("../etc/{}.png" .format(n))
+        plt.savefig("../eval/{}.png" .format(n))
     else:
         mean_loss.append(sum(derivative))
 

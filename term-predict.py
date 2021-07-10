@@ -16,7 +16,7 @@ for i in range(raw["dates"].index(start), len(raw["dates"])):
 with open("./temp/input", "w+") as f:
     for i in range(len(data)):
         for val in data[i]:
-            f.write(str(val) + " ")
+            f.write("{} " .format(val))
         if i != len(data) - 1:
             f.write("\n")
 

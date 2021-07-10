@@ -4,39 +4,38 @@ import numpy as np
 import tqdm as tqdm
 from datetime import datetime
 import matplotlib.pyplot as plt
-import yfinance as yf
+from pandas_datareader.data import DataReader
 
 def normalize(data:list):
     return [(p - min(data)) / (max(data) - min(data)) for p in data]
 
 def mavg(data:list, window:int):
-    return [sum(data[i:i+window]) / window for i in range(len(data) - window)]
+    return [sum(data[i:i+window]) / window for i in range(len(data) - window + 1)]
 
 def mse(actual:list, prediction:list):
     return sum([(actual[i] - prediction[i])**2 for i in range(len(actual))]) / len(actual)
 
-def HistoricalData(symbol:str, start:str, end="yyyy-mm-dd"):
-    if end != "yyyy-mm-dd":
-        data = yf.download(symbol, start, end)
-    else:
-        data = yf.download(symbol, start)
+def HistoricalData(symbol:str, start:str, end=datetime.today().strftime("%Y-%m-%d")):
+    with open("./apikey", "r") as f:
+        key = f.readline()
+    data = DataReader(symbol, "av-daily", start, end, api_key=key)
+    # adjusted close price and dates
     data.to_csv("./data/{}.csv" .format(symbol))
-    price = list(data["Adj Close"]) # adjusted close price
+    price = list(data["close"]) # adjusted close price
     with open("./data/{}.csv" .format(symbol), "r") as f:
-         dates = [line[:10] for line in f.readlines()] # get date of each price
-         del dates[0] # first line is category header
+         dates = [line[:10] for line in f.readlines()[1:]] # get date of each price (ignore first line; column description)
     return {"price": price, "dates": dates}
 
-def sample_timeseries_dataset(symbol:str, start:str, end="yyyy-mm-dd"):
+def sample_timeseries_dataset(symbol:str, start:str, end=datetime.today().strftime("%Y-%m-%d")):
     training_input, training_output = [], []
     raw = HistoricalData(symbol, start, end)
     price, dates = raw["price"], raw["dates"]
     # sample time series dataset
-    loop = tqdm.tqdm(total=len(price)-206, position=0, leave=False)
-    for i in range(len(price)-206):
-        loop.set_description("Processing time series... [{} ~ {}]" .format(dates[i], dates[i+205]))
-        training_input.append(normalize(mavg(price[i:i+171], 50))) # D-121 MAVG 50 input
-        training_output.append(normalize(mavg(price[i+121:i+206], 10))) # D+75 MAVG 10 output
+    loop = tqdm.tqdm(total=len(price)-204, position=0, leave=False)
+    for i in range(len(price)-204):
+        loop.set_description("Processing time series... [{} ~ {}]" .format(dates[i], dates[i+204]))
+        training_input.append(normalize(mavg(price[i:i+170], 50))) # Normalized D-121 MAVG 50 input
+        training_output.append(normalize(mavg(price[i+121:i+205], 10))) # Normalized D+75 MAVG 10 output
         loop.update(1)
     training_input, training_output = np.array(training_input), np.array(training_output)
     with open("./temp/input", "w+") as f:
@@ -48,7 +47,7 @@ def sample_timeseries_dataset(symbol:str, start:str, end="yyyy-mm-dd"):
     return {"input": training_input, "output": training_output}
 
 def sample_recent_input(symbol:str):
-    data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-171:], 50))
+    data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-170:], 50))
     with open("./temp/input", "w+") as f:
         for val in data:
             f.write("{} " .format(val))
@@ -56,10 +55,6 @@ def sample_recent_input(symbol:str):
 def validation(model:str):
     model_path = "./models/" + model
     os.system("rm {}/res/validation/*.png" .format(model_path))
-    # get model backtest MSE
-    actual = np.load("{}/backtest/actual.npy" .format(model_path))
-    backtest = np.load("{}/backtest/backtest.npy" .format(model_path))
-    threshold = mse(actual.flatten(), backtest.flatten())
     # validate predictions with actual trend data
     raw = HistoricalData(model, "2020-01-01")
     trend, dates = mavg(raw["price"], 10), raw["dates"][10:]
@@ -67,7 +62,7 @@ def validation(model:str):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
             actual = trend[dates.index(date):]
-            if len(actual) > 10:
+            if len(actual) >= 5:
                 if len(actual) >= 75: # expired predictions
                     actual = normalize(actual[:75])
                     prediction = np.load("{}/res/npy/{}" .format(model_path, f))
@@ -81,9 +76,8 @@ def validation(model:str):
                     actual = normalize(actual)
                     prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                     error = round(mse(actual, prediction), 4)
-                    if error < threshold:
-                        fig = plt.figure()
-                        plt.plot(prediction, color="red")
-                        plt.plot(actual, color="green")
-                        plt.savefig("{}/res/validation/{} [D+{} MSE={}].png" .format(model_path, date, len(actual), error))
+                    fig = plt.figure()
+                    plt.plot(prediction, color="red")
+                    plt.plot(actual, color="green")
+                    plt.savefig("{}/res/validation/{} [D+{} MSE={}].png" .format(model_path, date, len(actual), error))
 

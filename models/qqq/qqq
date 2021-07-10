@@ -1,5 +1,5 @@
 Trained Symbol: QQQ
-Applicable Symbol: QQQ
+Applicable Symbol: QQQ 
 
 Input: 121 --> 25 (encoded)
 Output: 75
@@ -7,16 +7,14 @@ Architecture:
     Encoder = Layer 1 {"conv_size": 2, "stride": 1, "padding": false, "pool_type": "max", "pool_size": 2}
     Neural Network = [25,25],[25,100],[100,75]
 
-00000 ~ 10000: TRANSFERRED FROM SPY
-
-10000 ~ 20000: 2000-01-01 ~ 2021-01-01 (Backtest: 15%)
+00000 ~ 10000: 2000-01-01 ~ 2021-01-01 (Backtest: 15%)
 =======================================================
-    (Total, Trained, Backtest): (5078, 4317,761)
-    Training Cost: 0.0338
-    Backtest Cost: 0.1230
+    (Total, Trained, Backtest): (5080, 4318, 762)
+    Training Cost: 0.0266
+    Backtest Cost: 0.1360
 
-20000 ~ 30000: 2000-01-01 ~ 2021-01-01 (Backtest: 0%)
+10000 ~ 20000: 2000-01-01 ~ 2021-01-01 (Backtest: 0%)
 =======================================================
-    (Total, Trained, Backtest): (5078, 5078, 0)
-    Training Cost: 0.0347
+    (Total, Trained, Backtest): (5080, 5080, 0)
+    Training Cost: 0.0277
     Backtest Cost: N/A
