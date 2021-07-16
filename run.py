@@ -11,6 +11,7 @@
 <date2> can be stated as yyyy-mm-dd as an alternative for the current date
 """
 
+import time
 import os, sys
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -100,4 +101,3 @@ def run():
 if __name__ == "__main__":
     if init():
         eval(mode + "()")
-

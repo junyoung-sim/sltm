@@ -52,7 +52,7 @@ class DeepNeuralNetwork:
                 self.saver.restore(self.sess, ckpt.model_checkpoint_path) # load existing sessions saved in model directory
             else:
                 self.sess.run(tf.global_variables_initializer())
-    def train(self, dataset={"input": [], "output": []}, iteration=int(), test=0.00):
+    def train(self, dataset={"input": [], "output": []}, iteration:int, test=0.00):
         training_input, training_output = dataset["input"], dataset["output"]
         if test != 0.00:
             # partition dataset
@@ -86,7 +86,7 @@ class DeepNeuralNetwork:
                 np.save(f, backtest)
         # save trained samples
         if input("Save trained samples? [yes/no]: ") == "yes":
-            trained = self.sess.run(self.layer[-1], feed_dict={self.input: training_input})
+            trained = np.array([normalize(result) for result in self.sess.run(self.layer[-1], feed_dict={self.input: training_input})])
             loop = tqdm.tqdm(total=trained.shape[0], position=0, leave=False)
             for i in range(trained.shape[0]):
                 loop.set_description("Saving trained samples... ")
@@ -95,7 +95,7 @@ class DeepNeuralNetwork:
                 plt.plot(training_output[i], color="green")
                 plt.savefig(self.path + "/trained-samples/sample" + str(i) + ".png")
                 loop.update(1)
-    def run(self, data=[]):
+    def run(self, data:list):
         results = [normalize(result) for result in self.sess.run(self.layer[-1], feed_dict={self.input: data})]
         return results
 
