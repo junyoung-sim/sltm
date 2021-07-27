@@ -52,7 +52,7 @@ class DeepNeuralNetwork:
                 self.saver.restore(self.sess, ckpt.model_checkpoint_path) # load existing sessions saved in model directory
             else:
                 self.sess.run(tf.global_variables_initializer())
-    def train(self, dataset={"input": [], "output": []}, iteration:int, test=0.00):
+    def train(self, dataset:dict, iteration:int, test=0.00):
         training_input, training_output = dataset["input"], dataset["output"]
         if test != 0.00:
             # partition dataset

@@ -18,7 +18,7 @@ def mse(actual:list, prediction:list):
 def HistoricalData(symbol:str, start:str, end=datetime.today().strftime("%Y-%m-%d")):
     with open("./apikey", "r") as f:
         key = f.readline()
-    data = DataReader(symbol, "av-daily", start, end, api_key=key)
+    data = DataReader(symbol, "av-daily-adjusted", start, end, api_key=key)
     # adjusted close price and dates
     data.to_csv("./data/{}.csv" .format(symbol))
     price = list(data["close"]) # adjusted close price
@@ -62,7 +62,7 @@ def validation(model:str):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
             actual = trend[dates.index(date):]
-            if len(actual) >= 5:
+            if len(actual) >= 2:
                 if len(actual) >= 75: # expired predictions
                     actual = normalize(actual[:75])
                     prediction = np.load("{}/res/npy/{}" .format(model_path, f))
@@ -76,8 +76,9 @@ def validation(model:str):
                     actual = normalize(actual)
                     prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                     error = round(mse(actual, prediction), 4)
-                    fig = plt.figure()
-                    plt.plot(prediction, color="red")
-                    plt.plot(actual, color="green")
-                    plt.savefig("{}/res/validation/{} [D+{} MSE={}].png" .format(model_path, date, len(actual), error))
+                    if error < 0.1:
+                        fig = plt.figure()
+                        plt.plot(prediction, color="red")
+                        plt.plot(actual, color="green")
+                        plt.savefig("{}/res/validation/{} [D+{} MSE={}].png" .format(model_path, date, len(actual), error))
 

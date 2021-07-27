@@ -11,7 +11,7 @@ raw = HistoricalData(model, "2019-01-01")
 
 data = []
 for i in range(raw["dates"].index(start), len(raw["dates"])):
-    data.append(normalize(mavg(raw["price"][i-170:i], 50)))
+    data.append(normalize(mavg(raw["price"][i-169:i+1], 50)))
 
 with open("./temp/input", "w+") as f:
     for i in range(len(data)):
