@@ -76,7 +76,7 @@ def validation(model:str):
                     actual = normalize(actual)
                     prediction = normalize(np.load("{}/res/npy/{}" .format(model_path, f))[:len(actual)])
                     error = round(mse(actual, prediction), 4)
-                    if error < 0.1:
+                    if error < 0.06:
                         fig = plt.figure()
                         plt.plot(prediction, color="red")
                         plt.plot(actual, color="green")

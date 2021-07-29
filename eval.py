@@ -1,32 +1,35 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import numpy as np
-from lib import mse
+from lib import mse, normalize
 import matplotlib.pyplot as plt
 
 model = sys.argv[1]
-plot_true = int(sys.argv[2])
+days = int(sys.argv[2])
+threshold = float(sys.argv[3])
+accurate = float(sys.argv[4])
+plot_true = int(sys.argv[5])
 
 actual = np.load("./models/{}/backtest/actual.npy" .format(model))
 backtest = np.load("./models/{}/backtest/backtest.npy" .format(model))
 
-success = []
-for i in range(actual.shape[0]):
-    error = mse(actual[i], backtest[i])
-    if error < 0.06:
-        success.append(1)
+good = []
+for d in range(actual.shape[0]):
+    if (mse(normalize(actual[d][:days]), normalize(backtest[d][:days])) < threshold) & (mse(actual[d], backtest[d]) < accurate):
+        good.append(d)
         if plot_true == 1:
-            plt.figure()
-            plt.plot(actual[i], color="green")
-            plt.plot(backtest[i], color="red")
-            plt.savefig("./models/{}/eval/{} [{}].png" .format(model, i, round(error, 4)))
-    else:
-        success.append(0)
+            os.system("cp ./models/{}/backtest/test{}.png ./models/{}/eval/" .format(model, d, model))
 
-if plot_true == 1:
-    # accurate prediction pulse
-    plt.figure(figsize=(12,5))
-    plt.plot(success)
-    plt.savefig("./models/{}/eval/success.png" .format(model))
+predicted = set([])
+for d in good:
+    for i in range(d, d+75):
+        predicted.add(i)
+
+print("\n", model)
+print("Correct Predictions: {}" .format(len(good)))
+print("% of Predicted Days: {}" .format(round(len(predicted) / (actual.shape[0] + 75) * 100, 2)))
+print("\n")
+
 
