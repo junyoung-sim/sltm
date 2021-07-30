@@ -1,3 +1,3 @@
-## High Dimensional Long Term Modeling (HD-LTM)
+## Stochastic Long-Term Modeling (SLTM)
 
-Moving Average Predictions for Financial Time Series Data based on a Convolutional Neural Network with Two-Dimensional Processing
+Moving Average Prediction of Financial Time Series Data based on a Two-Dimensional Convolutional Neural Network 

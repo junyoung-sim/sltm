@@ -62,7 +62,7 @@ def validation(model:str):
         if f.endswith(".npy") and f[:-4] != datetime.today().strftime("%Y-%m-%d"):
             date = f[:-4]
             actual = trend[dates.index(date):]
-            if len(actual) >= 2:
+            if len(actual) >= 10:
                 if len(actual) >= 75: # expired predictions
                     actual = normalize(actual[:75])
                     prediction = np.load("{}/res/npy/{}" .format(model_path, f))
