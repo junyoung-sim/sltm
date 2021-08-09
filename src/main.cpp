@@ -178,15 +178,7 @@ void run(std::string symbol) {
 
     // predict
     std::vector<double> yhat = model.predict(encoded[0], true);
-
-    std::time_t now = std::time(0);
-    std::tm *local = std::localtime(&now);
-    std::string year = std::to_string(local->tm_year);
-    std::string month = std::to_string(local->tm_mon);
-    std::string day = std::to_string(local->tm_mday);
-    std::string date = year + "-" + month + "-" + day;
-
-    std::ofstream f("./models/" + symbol + "/res/" + date);
+    std::ofstream f("./models/" + symbol + "/res/pred");
     if(f.is_open()) {
         for(unsigned int i = 0; i < yhat.size(); i++) {
             f << yhat[i];
@@ -197,7 +189,7 @@ void run(std::string symbol) {
     }
 
     // plot
-    cmd = "./scripts/plot.py " + symbol + " " + date;
+    cmd = "./scripts/plot.py " + symbol;
     std::system(cmd.c_str());
 }
 
