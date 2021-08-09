@@ -1,20 +1,26 @@
-Trained Symbol: SPY
-Applicable Symbol: SPY 
+Input: 121 --> Encoded: 25
+Output: 50
 
-Input: 121 --> 25 (encoded)
-Output: 75
-Architecture:
-    Encoder = Layer 1 {"conv_size": 2, "stride": 1, "padding": false, "pool_type": "max", "pool_size": 2}
-    Neural Network = [25,25],[25,100],[100,75]
+Encoder Layer 1: (conv_size, stride, padding, pool_type, pool_size) = (2, 1, 0, max, 2)
 
-00000 ~ 10000: 2000-01-01 ~ 2021-01-01 (Backtest: 15%)
-=======================================================
-    (Total, Trained, Backtest): (5080, 4318, 762)
-    Training Cost: 0.0267
-    Backtest Cost: 0.1419
+Architecture: [25,50],[50,50]
+Activation: ReLU
+Initial Weight Range: [-1.0, 1.0]
 
-10000 ~ 20000: 2000-01-01 ~ 2021-01-01 (Backtest: 0%)
-=======================================================
-    (Total, Trained, Backtest): (5080, 5080, 0)
-    Training Cost: 0.0290
-    Backtest Cost: N/A
+
+--------------------------------------------------------------------------------
+00000 ~ 10000: 2000-01-01 2021-01-01 (Backtest: 15%) (Train, Test) = (4339, 765)
+--------------------------------------------------------------------------------
+Initial Alpha   = 0.01
+Decay Factor    = 0.01
+Training MSE    = 0.0637801
+Backtesting MSE = 0.0901179
+
+
+--------------------------------------------------------------------------------
+10000 ~ 11000: 2000-01-01 2021-01-01 (Backtest: 0%) (Train, Test) = (5104, 0)
+--------------------------------------------------------------------------------
+Initial Alpha   = 0.01
+Decay Factor    = 0.00
+Training MSE    = 0.0616929
+Backtesting MSE = N/A
