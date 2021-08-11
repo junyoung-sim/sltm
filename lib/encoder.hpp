@@ -37,7 +37,7 @@ public:
         }
     }
    std::tuple<unsigned int, unsigned int, bool, std::string, unsigned int> *get_parameters() { return &parameters; }
-    std::vector<std::vector<double>> *get_kernel() { return &kernel; }
+   std::vector<std::vector<double>> *get_kernel() { return &kernel; }
 };
 
 class Encoder

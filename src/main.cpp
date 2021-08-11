@@ -150,7 +150,7 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
             f1.close(); f2.close();
         }
         // plot
-        cmd = "./scripts/plot_backtest.py " + symbol;
+        cmd = "./scripts/eval_backtest.py " + symbol;
         std::system(cmd.c_str());
     }
 
