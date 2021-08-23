@@ -62,7 +62,11 @@ bool init(std::string mode, std::string model_name) {
             "./models/" + model_name + "/encoder",
             "./models/" + model_name + "/encoder/kernels",
             "./models/" + model_name + "/backtest",
-            "./models/" + model_name + "/res"
+            "./models/" + model_name + "/res",
+            "./models/" + model_name + "/res/npy",
+            "./models/" + model_name + "/res/prediction",
+            "./models/" + model_name + "/res/validation",
+            "./models/" + model_name + "/res/expired"
         };
         // check if required dircetories exists, create them if not
         for(unsigned int i = 0; i < required.size(); i++) {

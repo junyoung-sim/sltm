@@ -15,9 +15,9 @@ with open("{}pred" .format(path), "r") as f:
 
 plt.title("{} [{}]" .format(model, date))
 plt.plot(yhat, color="red")
-plt.savefig("{}{}.png" .format(path, date))
+plt.savefig("{}prediction/{}.png" .format(path, date))
 
 os.system("rm {}pred" .format(path))
-with open("{}{}.npy" .format(path, date), "wb") as f:
+with open("{}npy/{}.npy" .format(path, date), "wb") as f:
     np.save(f, yhat)
 
