@@ -41,20 +41,16 @@ def sample_timeseries_dataset(symbol:str, start:str, end=datetime.today().strfti
         input_vectors.append(normalize(mavg(price[i:i+170], 50))) # Normalized D-121 MAVG 50 input
         output_vectors.append(normalize(mavg(price[i+121:i+180], 10))) # Normalized D+50 MAVG 10 output
         loop.update(1)
-    # write input dataset
-    with open("./temp/input", "w+") as f:
+    # write dataset to ./temp
+    with open("./temp/input", "w+") as f1, open("./temp/output", "w+") as f2:
         for i in range(len(input_vectors)):
             for val in input_vectors[i]:
-                f.write("{} " .format(val))
-            if i != len(input_vectors) - 1:
-                f.write("\n")
-    # write output dataset
-    with open("./temp/output", "w+") as f:
-        for i in range(len(output_vectors)):
+                f1.write("{} " .format(val))
             for val in output_vectors[i]:
-                f.write("{} " .format(val))
-            if i != len(output_vectors) - 1:
-                f.write("\n")
+                f2.write("{} " .format(val))
+            if i != len(input_vectors) - 1:
+                f1.write("\n")
+                f2.write("\n")
 
 def sample_recent_input(symbol:str):
     data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-170:], 50))

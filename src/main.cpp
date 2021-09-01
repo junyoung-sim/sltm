@@ -112,16 +112,16 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
     encoder.save();
 
     // partition datset
-    std::vector<std::vector<double>> encoded_train, encoded_test;
-    std::vector<std::vector<double>> output_train, output_test;
+    std::vector<std::vector<double>> train_x, train_y;
+    std::vector<std::vector<double>> test_x, test_y;
     for(unsigned int d = 0; d < encoded.size(); d++) {
         if(d < encoded.size() - (int)(encoded.size() * backtest)) {
-            encoded_train.push_back(encoded[d]);
-            output_train.push_back(output[d]);
+            train_x.push_back(encoded[d]);
+            train_y.push_back(output[d]);
         }
         else {
-            encoded_test.push_back(encoded[d]);
-            output_test.push_back(output[d]);
+            test_x.push_back(encoded[d]);
+            test_y.push_back(output[d]);
         }
     }
     encoded.clear(); output.clear();
@@ -129,7 +129,7 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
     // train deep neural network
     DeepNet model;
     if(!model.load(symbol)) model.init({{25,50},{50,50}}, "relu");
-    model.fit(encoded_train, output_train, epoch, learning_rate, decay_factor);
+    model.fit(train_x, train_y, epoch, learning_rate, decay_factor);
 
     // backtest
     if(backtest != 0.0) {
@@ -137,19 +137,19 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
         std::ofstream f2("./models/" + symbol + "/backtest/backtest");
         if(f1.is_open() && f2.is_open()) {
             double backtest_cost = 0.00;
-            for(unsigned int d = 0; d < encoded_test.size(); d++) {
-                std::vector<double> yhat = model.predict(encoded_test[d], true);
-                backtest_cost += mse(output_test[d], yhat);
+            for(unsigned int d = 0; d < test_x.size(); d++) {
+                std::vector<double> yhat = model.predict(test_x[d], true); // normalize=true
+                backtest_cost += mse(test_y[d], yhat);
                 if(f1.is_open() && f2.is_open()) {
-                    for(unsigned int i = 0; i < output_test[d].size(); i++) {
-                        f1 << output_test[d][i]; f2 << yhat[i];
-                        if(i != output_test[d].size() - 1) { f1 << " "; f2 << " "; }
+                    for(unsigned int i = 0; i < test_y[d].size(); i++) {
+                        f1 << test_y[d][i]; f2 << yhat[i];
+                        if(i != test_y[d].size() - 1) { f1 << " "; f2 << " "; }
                     }
-                    if(d != encoded_test.size() - 1) { f1 << "\n"; f2 << "\n"; }
+                    if(d != test_x.size() - 1) { f1 << "\n"; f2 << "\n"; }
                 }
                 yhat.clear();
             }
-            backtest_cost /= encoded_test.size();
+            backtest_cost /= test_x.size();
             std::cout << "\nBacktesting MSE = " << backtest_cost << std::endl;
             f1.close(); f2.close();
         }
