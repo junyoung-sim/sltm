@@ -2,10 +2,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <chrono>
+#include <random>
 #include <fstream>
 #include <algorithm>
 #include <filesystem>
-#include <ctime>
 #include "../lib/encoder.hpp"
 #include "../lib/dnn.hpp"
 
@@ -126,6 +127,19 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
     }
     encoded.clear(); output.clear();
 
+    // shuffle training dataset
+    std::vector<unsigned int> indexes;
+    for(unsigned int i = 0; i < train_x.size(); i++) indexes.push_back(i);
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(indexes.begin(), indexes.end(), std::default_random_engine(seed));
+
+    for(unsigned int i = 0; i < indexes.size() - 1; i++) {
+        unsigned int p1 = indexes[i]; unsigned int p2 = indexes[i+1];
+        train_x[p1].swap(train_x[p2]);
+        train_y[p1].swap(train_y[p2]);
+    }
+    indexes.clear();
+
     // train deep neural network
     DeepNet model;
     if(!model.load(symbol)) model.init({{25,50},{50,50}}, "relu");
@@ -140,22 +154,18 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
             for(unsigned int d = 0; d < test_x.size(); d++) {
                 std::vector<double> yhat = model.predict(test_x[d], true); // normalize=true
                 backtest_cost += mse(test_y[d], yhat);
-                if(f1.is_open() && f2.is_open()) {
-                    for(unsigned int i = 0; i < test_y[d].size(); i++) {
-                        f1 << test_y[d][i]; f2 << yhat[i];
-                        if(i != test_y[d].size() - 1) { f1 << " "; f2 << " "; }
-                    }
-                    if(d != test_x.size() - 1) { f1 << "\n"; f2 << "\n"; }
+                // save test_y and yhat
+                for(unsigned int i = 0; i < test_y[d].size(); i++) {
+                    f1 << test_y[d][i]; f2 << yhat[i];
+                    if(i != test_y[d].size() - 1) { f1 << " "; f2 << " "; }
                 }
+                if(d != test_x.size() - 1) { f1 << "\n"; f2 << "\n"; }
                 yhat.clear();
             }
             backtest_cost /= test_x.size();
             std::cout << "\nBacktesting MSE = " << backtest_cost << std::endl;
             f1.close(); f2.close();
         }
-        // plot
-        cmd = "./scripts/eval_backtest.py " + symbol;
-        std::system(cmd.c_str());
     }
 
     model.save(symbol);

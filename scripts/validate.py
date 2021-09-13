@@ -19,21 +19,21 @@ for f in os.listdir("{}npy/" .format(path)):
     if f.endswith(".npy") and f[:10] != datetime.today().strftime("%Y-%m-%d"):
         date = f[:10]
         actual = normalize(trend[dates.index(date):])
-        if len(actual) <= 50:
-            if len(actual) < 50:
-                prediction = normalize(np.load("{}npy/{}" .format(path, f))[:len(actual)])
-                error = mse(actual, prediction)
-                plt.figure()
-                plt.title("{} [{}]" .format(model, date))
-                plt.plot(actual, color="green")
-                plt.plot(prediction, color="red")
-                plt.savefig("{}validation/{} MSE={}.png" .format(path, date, round(error, 4)))
-            elif len(actual) == 50:
-                prediction = np.load("{}npy/{}" .format(path, f))
-                error = mse(actual, prediction)
-                plt.figure()
-                plt.title("{} [{}]" .format(model, date))
-                plt.plot(actual, color="green")
-                plt.plot(prediction, color="red")
-                plt.savefig("{}expired/{} MSE={}.png" .format(path, date, round(error, 4)))
-                os.system("mv {}npy/{} {}expired" .format(path, f, path))
+        if len(actual) < 50:
+            prediction = normalize(np.load("{}npy/{}" .format(path, f))[:len(actual)])
+            error = mse(actual, prediction)
+            plt.figure()
+            plt.title("{} [{}]" .format(model, date))
+            plt.plot(actual, color="green")
+            plt.plot(prediction, color="red")
+            plt.savefig("{}validation/{} MSE={}.png" .format(path, date, round(error, 4)))
+        elif len(actual) >= 50:
+            actual = normalize(actual[:50])
+            prediction = np.load("{}npy/{}" .format(path, f))
+            error = mse(actual, prediction)
+            plt.figure()
+            plt.title("{} [{}]" .format(model, date))
+            plt.plot(actual, color="green")
+            plt.plot(prediction, color="red")
+            plt.savefig("{}expired/{} MSE={}.png" .format(path, date, round(error, 4)))
+            os.system("mv {}npy/{} {}expired" .format(path, f, path))
