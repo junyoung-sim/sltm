@@ -11,7 +11,7 @@ path  = "./models/{}/res/" .format(model)
 
 os.system("rm {}validation/*.png" .format(path))
 
-raw = HistoricalData(symbol=model, start="2021-01-01")
+raw = HistoricalData(symbol=model, start="2000-01-01")
 trend = mavg(raw["price"], 10)
 dates = raw["dates"][10:]
 
@@ -37,3 +37,4 @@ for f in os.listdir("{}npy/" .format(path)):
             plt.plot(prediction, color="red")
             plt.savefig("{}expired/{} MSE={}.png" .format(path, date, round(error, 4)))
             os.system("mv {}npy/{} {}expired" .format(path, f, path))
+            os.system("rm {}prediction/{}.png" .format(path, date))
