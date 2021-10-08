@@ -220,4 +220,3 @@ bool DeepNet::load(std::string model_name) {
     return loaded;
 }
 
-
