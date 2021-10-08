@@ -149,11 +149,11 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
     if(backtest != 0.0) {
         std::ofstream f1("./models/" + symbol + "/backtest/actual");
         std::ofstream f2("./models/" + symbol + "/backtest/backtest");
-        if(f1.is_open() && f2.is_open()) {
-            double backtest_cost = 0.00;
-            for(unsigned int d = 0; d < test_x.size(); d++) {
-                std::vector<double> yhat = model.predict(test_x[d], true); // normalize=true
-                backtest_cost += mse(test_y[d], yhat);
+        double backtest_cost = 0.00;
+        for(unsigned int d = 0; d < test_x.size(); d++) {
+            std::vector<double> yhat = model.predict(test_x[d], true); // normalize=true
+            backtest_cost += mse(test_y[d], yhat);
+            if(f1.is_open() && f2.is_open()) {
                 // save test_y and yhat
                 for(unsigned int i = 0; i < test_y[d].size(); i++) {
                     f1 << test_y[d][i]; f2 << yhat[i];
