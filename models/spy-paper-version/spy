@@ -1,0 +1,16 @@
+Input: 121 --> Encoded: 25
+Output: 50
+
+Encoder Layer 1: (conv_size, stride, padding, pool_type, pool_size) = (2, 1, 0, max, 2)
+
+Architecture: [25,50],[50,50]
+Activation: ReLU
+Initial Weight Range: [-1.0, 1.0]
+
+--------------------------------------------------------------------------------
+00000 ~ 10000: 2000-01-01 2021-01-01 (Backtest: 15%) (Train, Test) = (4339, 765)
+--------------------------------------------------------------------------------
+Initial Alpha   = 0.01
+Decay Factor    = 0.01
+Training MSE    = 0.0543546
+Backtesting MSE = 0.0940630

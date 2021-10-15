@@ -53,7 +53,7 @@ std::vector<std::vector<std::vector<double>>> reshape(std::vector<std::vector<do
 }
 
 bool init(std::string mode, std::string model_name) {
-    bool okay = false;
+    bool pass = false;
     std::cout << "\nInitializing SLTM...\n\n";
     if(mode.compare("train") == 0) {
         // list of required directories
@@ -77,7 +77,7 @@ bool init(std::string mode, std::string model_name) {
                 std::system(cmd.c_str());
             }
         }
-        okay = true;
+        pass = true;
         required.clear();
     }
     else if(mode.compare("run") == 0) {
@@ -85,15 +85,14 @@ bool init(std::string mode, std::string model_name) {
         std::string checkpoint = "./models/" + model_name + "/dnn/checkpoint";
         std::ifstream f(checkpoint);
         if(f.is_open()) {
-            okay = true;
+            pass = true;
             f.close();
         }
         else std::cout << "No trained checkpoint for model named <" << model_name << "> exists!" << std::endl;
     }
     else std::cout << "Invalid mode given!" << std::endl;
 
-    if(okay) std::system("rm -rf ./temp && mkdir temp");
-    return okay;
+    return pass;
 }
 
 void train(std::string symbol, std::string start, std::string end, unsigned int epoch, double learning_rate, double decay_factor, double backtest) {
@@ -108,24 +107,24 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
     // encode reshaped input (ConvPool2D)
     Encoder encoder(symbol);
     encoder.add_layer(2, 1, false, "max", 2);
-    encoder.load(); // overwrites encoder with the existing encoder parameters
-    std::vector<std::vector<double>> encoded = encoder.encode(reshaped_input);
+    encoder.load(); // load existing encoder parameters if a pre-trained model exists
+    std::vector<std::vector<double>> encoded_input = encoder.encode(reshaped_input);
     encoder.save();
 
     // partition datset
     std::vector<std::vector<double>> train_x, train_y;
     std::vector<std::vector<double>> test_x, test_y;
-    for(unsigned int d = 0; d < encoded.size(); d++) {
-        if(d < encoded.size() - (int)(encoded.size() * backtest)) {
-            train_x.push_back(encoded[d]);
+    for(unsigned int d = 0; d < encoded_input.size(); d++) {
+        if(d < encoded_input.size() - (int)(encoded_input.size() * backtest)) {
+            train_x.push_back(encoded_input[d]);
             train_y.push_back(output[d]);
         }
         else {
-            test_x.push_back(encoded[d]);
+            test_x.push_back(encoded_input[d]);
             test_y.push_back(output[d]);
         }
     }
-    encoded.clear(); output.clear();
+    encoded_input.clear(); output.clear();
 
     // shuffle training dataset
     std::vector<unsigned int> indexes;
@@ -160,12 +159,12 @@ void train(std::string symbol, std::string start, std::string end, unsigned int 
                     if(i != test_y[d].size() - 1) { f1 << " "; f2 << " "; }
                 }
                 if(d != test_x.size() - 1) { f1 << "\n"; f2 << "\n"; }
-                yhat.clear();
             }
-            backtest_cost /= test_x.size();
-            std::cout << "\nBacktesting MSE = " << backtest_cost << std::endl;
-            f1.close(); f2.close();
+            yhat.clear();
         }
+        backtest_cost /= test_x.size();
+        std::cout << "\nBacktesting MSE = " << backtest_cost << std::endl;
+        f1.close(); f2.close();
     }
 
     model.save(symbol);
@@ -182,8 +181,8 @@ void run(std::string symbol) {
     // encode reshaped input (ConvPool2D)
     Encoder encoder(symbol);
     encoder.add_layer(2, 1, false, "max", 2);
-    encoder.load(); // overwrites encoder with the existing encoder parameters
-    std::vector<std::vector<double>> encoded = encoder.encode(reshaped_input);
+    encoder.load();
+    std::vector<std::vector<double>> encoded_input = encoder.encode(reshaped_input);
     encoder.save();
 
     // load deep neural network
@@ -191,7 +190,7 @@ void run(std::string symbol) {
     model.load(symbol);
 
     // predict
-    std::vector<double> yhat = model.predict(encoded[0], true);
+    std::vector<double> yhat = model.predict(encoded_input[0], true);
     std::ofstream f("./models/" + symbol + "/res/pred");
     if(f.is_open()) {
         for(unsigned int i = 0; i < yhat.size(); i++) {

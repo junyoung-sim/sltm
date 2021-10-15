@@ -134,11 +134,11 @@ void Encoder::load() {
             for(unsigned int i = 0; i < line.length(); i++) {
                 if(line[i] != ' ') val += line[i];
                 else {
-                    if(val_count == CONV_SIZE) conv_size = stoul(val);
-                    else if(val_count == STRIDE) stride = stoul(val);
-                    else if(val_count == PADDING) padding = stoi(val);
+                    if(val_count == CONV_SIZE) conv_size = std::stoul(val);
+                    else if(val_count == STRIDE) stride = std::stoul(val);
+                    else if(val_count == PADDING) padding = std::stoi(val);
                     else if(val_count == POOL_TYPE) pool_type = val;
-                    else pool_size = stoul(val);
+                    else pool_size = std::stoul(val);
                     val_count++;
                     val = "";
                 }
@@ -152,7 +152,7 @@ void Encoder::load() {
                     for(unsigned int i = 0; i < line.length(); i++) {
                         if(line[i] != ' ') val += line[i];
                         else {
-                            row.push_back(stof(val));
+                            row.push_back(std::stod(val));
                             val = "";
                         }
                     }
