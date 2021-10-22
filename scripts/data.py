@@ -51,6 +51,7 @@ def sample_timeseries_dataset(symbol:str, start:str, end=datetime.today().strfti
             if i != len(input_vectors) - 1:
                 f1.write("\n")
                 f2.write("\n")
+    return input_vectors, output_vectors
 
 def sample_recent_input(symbol:str):
     data = normalize(mavg(HistoricalData(symbol, "2020-01-01")["price"][-170:], 50))
